@@ -3,10 +3,14 @@ plugins {
     `maven-publish`
     id("io.izzel.taboolib") version "1.40"
     id("org.jetbrains.kotlin.jvm") version "1.5.10"
-    kotlin("plugin.serialization") version "1.5.10"
 }
 
 taboolib {
+    description {
+        contributors {
+            name("枫溪")
+        }
+    }
     install("common")
     install("common-5")
     install("module-configuration")
@@ -19,16 +23,21 @@ taboolib {
     install("expansion-command-helper")
     install("expansion-javascript")
     classifier = null
-    version = "6.0.9-17"
+    version = "6.0.9-68"
 }
 
 repositories {
+    maven { url = uri("https://repo.dmulloy2.net/repository/public/") }
+    maven { url = uri("https://jitpack.io") }
     mavenCentral()
 }
 
 dependencies {
     compileOnly("ink.ptms.core:v11200:11200")
-    compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
+    compileOnly("com.google.code.gson:gson:2.9.0")
+    compileOnly("com.github.LoneDev6:API-ItemsAdder:3.2.3c")
+    compileOnly("com.comphenix.protocol:ProtocolLib:4.7.0")
+    taboo("ink.ptms:um:1.0.0-beta-18")
     compileOnly(kotlin("stdlib"))
     compileOnly(fileTree("libs"))
 }

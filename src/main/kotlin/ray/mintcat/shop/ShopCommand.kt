@@ -1,9 +1,9 @@
 package ray.mintcat.shop
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
+import ray.mintcat.shop.data.ShopData
 import ray.mintcat.shop.utils.error
 import ray.mintcat.shop.utils.info
 import taboolib.common.platform.command.CommandBody
@@ -12,7 +12,6 @@ import taboolib.common.platform.command.mainCommand
 import taboolib.common.platform.command.subCommand
 import taboolib.expansion.createHelper
 
-@ExperimentalSerializationApi
 @CommandHeader(name = "shop", aliases = ["sp"], permission = "shop.use")
 object ShopCommand {
 

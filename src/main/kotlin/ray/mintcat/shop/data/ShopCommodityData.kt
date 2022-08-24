@@ -1,10 +1,12 @@
-package ray.mintcat.shop
+package ray.mintcat.shop.data
 
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.Expose
+import org.bukkit.Material
 import org.bukkit.entity.Player
-import org.bukkit.inventory.ItemStack
-import ray.mintcat.shop.serializable.UUIDSerializable
-import ray.mintcat.shop.serializable.XItemStackSerializable
+import ray.mintcat.shop.Shop
+import ray.mintcat.shop.data.materials.MaterialFeed
+import ray.mintcat.shop.data.materials.ShopMaterialData
+import ray.mintcat.shop.utils.*
 import taboolib.common.platform.function.submit
 import taboolib.library.xseries.XMaterial
 import taboolib.module.nms.getName
@@ -13,23 +15,31 @@ import taboolib.module.ui.openMenu
 import taboolib.module.ui.type.Basic
 import taboolib.platform.util.buildItem
 import taboolib.platform.util.inputBook
+import taboolib.platform.util.isAir
 import java.util.*
-import ray.mintcat.shop.utils.*
 
-@Serializable
 class ShopCommodityData(
-    @Serializable(with = UUIDSerializable::class)
+    @Expose
     val uuid: UUID,
-    @Serializable(with = XItemStackSerializable::class)
-    var item: ItemStack,
+    @Expose
+    var item: ShopMaterialData,
+    @Expose
     var price: Double,
+    @Expose
     var buy: Double,
+    @Expose
     var give: Boolean = true,
-    var showName: String = item.getName(),
+    @Expose
+    var showName: String = item.create(null)?.getName() ?: item.id,
+    @Expose
     var info: List<String> = listOf(),
+    @Expose
     var condition: List<String> = listOf(),
+    @Expose
     var action: List<String> = listOf(),
+    @Expose
     var actionBuy: List<String> = listOf(),
+    @Expose
     var actionSell: List<String> = listOf()
 ) {
 
@@ -43,7 +53,10 @@ class ShopCommodityData(
                 "#G#F#J#K#",
                 "####L####",
             )
-            set('A', buildItem(item) {
+            set('A', buildItem(item.create(player) ?: buildItem(Material.BARRIER) {
+                name = "&4物品不存在&e ${item.form}:${item.id}"
+                colored()
+            }) {
                 lore.add(" ")
                 lore.add("&7点击修改物品")
             }) {
@@ -65,7 +78,14 @@ class ShopCommodityData(
                                     openEdit(player, father)
                                 }
                             }
-                            this@ShopCommodityData.item = item
+                            if (item.isAir) {
+                                player.error("修改失败")
+                                submit(delay = 1) {
+                                    openEdit(player, father)
+                                }
+                                return@onClose
+                            }
+                            this@ShopCommodityData.item = MaterialFeed.toMaterial(item)!!
                             player.info("成功修改为! ${item.getName()}")
                             submit(delay = 1) {
                                 openEdit(player, father)

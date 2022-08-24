@@ -1,7 +1,10 @@
-package ray.mintcat.shop
+package ray.mintcat.shop.data
 
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.Expose
+import org.bukkit.Material
 import org.bukkit.entity.Player
+import ray.mintcat.shop.Shop
+import ray.mintcat.shop.data.materials.MaterialFeed
 import ray.mintcat.shop.utils.*
 import taboolib.common.platform.function.submit
 import taboolib.library.xseries.XMaterial
@@ -11,13 +14,14 @@ import taboolib.module.ui.openMenu
 import taboolib.module.ui.type.Basic
 import taboolib.module.ui.type.Linked
 import taboolib.platform.util.buildItem
-import taboolib.platform.util.checkItem
 import taboolib.platform.util.giveItem
+import taboolib.platform.util.takeItem
 import java.util.*
 
-@Serializable
 class ShopData(
+    @Expose
     val name: String,
+    @Expose
     val commodity: MutableList<ShopCommodityData> = mutableListOf()
 ) {
 
@@ -32,7 +36,10 @@ class ShopData(
                 }
             }
             onGenerate { player, element, index, slot ->
-                buildItem(element.item) {
+                buildItem(element.item.create(player) ?: buildItem(Material.BARRIER) {
+                    name = "&4物品不存在&e ${element.item.form}:${element.item.id}"
+                    colored()
+                }) {
                     name = element.showName
                     if (element.info.isNotEmpty()) {
                         lore.addAll(element.info.map { "&f${it.color()}".color() })
@@ -44,7 +51,11 @@ class ShopData(
                     }
                     if (element.buy > 0.0) {
                         lore.add("&7回收价: &f${element.buy}/个".color())
-                        lore.add("&8右键出售 (&7最大${getAmount(player, element.item)}&8)".color())
+                        lore.add(
+                            "&8右键出售 (&7最大${
+                                element.item.lib().amount(player.inventory, element.item.id)
+                            }&8)".color()
+                        )
                     }
                     if (player.isOp) {
                         lore.add("&4以下内容仅管理员可见".color())
@@ -109,7 +120,15 @@ class ShopData(
                                         openShop(player)
                                     }
                                 }
-                                val commoditys = ShopCommodityData(UUID.randomUUID(), item, 0.0, 0.0)
+                                val create = MaterialFeed.toMaterial(item)
+                                if (create == null) {
+                                    player.error("创建失败")
+                                    submit(delay = 1) {
+                                        openShop(player)
+                                    }
+                                    return@onClose
+                                }
+                                val commoditys = ShopCommodityData(UUID.randomUUID(), create, 0.0, 0.0)
                                 commodity.add(commoditys)
                                 player.info("创建成功! ${item.getName()}")
                                 submit(delay = 1) {
@@ -157,11 +176,13 @@ class ShopData(
                             }
                             return@inputSign
                         }
-                        if (!player.checkItem(element.item, amount)) {
+                        if (element.item.amount < amount) {
                             player.error("你所拥有的物品不足!")
                             return@inputSign
                         }
-                        player.checkItem(element.item, amount, true)
+                        player.inventory.takeItem(amount) {
+                            element.item.lib().isItem(it, element.item.id)
+                        }
                         val money = amount * element.buy
                         Vault.addMoney(player, money)
                         (1..amount).forEach { _ ->
@@ -197,7 +218,7 @@ class ShopData(
                         val money = amount * element.price
                         if (Vault.takeMoney(player, money)) {
                             if (element.give) {
-                                player.giveItem(element.item, amount)
+                                player.giveItem(element.item.create(player) ?: return@inputSign, amount)
                             }
                             (1..amount).forEach { _ ->
                                 element.actionBuy.replace("=money=", money.toString()).toList().eval(player)
