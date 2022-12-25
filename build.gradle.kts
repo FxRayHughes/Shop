@@ -23,7 +23,7 @@ taboolib {
     install("expansion-command-helper")
     install("expansion-javascript")
     classifier = null
-    version = "6.0.9-68"
+    version = "6.0.9-82"
 }
 
 repositories {

@@ -9,6 +9,7 @@ import ray.mintcat.shop.data.materials.ShopMaterialData
 import ray.mintcat.shop.utils.*
 import taboolib.common.platform.function.submit
 import taboolib.library.xseries.XMaterial
+import taboolib.module.chat.colored
 import taboolib.module.nms.getName
 import taboolib.module.nms.inputSign
 import taboolib.module.ui.openMenu

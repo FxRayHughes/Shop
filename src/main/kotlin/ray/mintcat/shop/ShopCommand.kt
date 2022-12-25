@@ -12,7 +12,7 @@ import taboolib.common.platform.command.mainCommand
 import taboolib.common.platform.command.subCommand
 import taboolib.expansion.createHelper
 
-@CommandHeader(name = "shop", aliases = ["sp"], permission = "shop.use")
+@CommandHeader(name = "shop", aliases = ["sp","rayshop"], permission = "shop.use")
 object ShopCommand {
 
     @CommandBody

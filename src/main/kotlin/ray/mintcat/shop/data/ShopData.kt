@@ -157,7 +157,7 @@ class ShopData(
                     }
                     return@onClick
                 }
-                if (event.clickEvent().isRightClick) {
+                if (event.clickEvent().isRightClick && element.buy > 0) {
                     //回收
                     player.closeInventory()
                     player.inputSign(

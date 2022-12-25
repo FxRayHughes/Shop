@@ -14,10 +14,13 @@ object MaterialItemsAdder : Material {
     override val from: String
         get() = "ItemsAdder"
 
-    @Awake(LifeCycle.ACTIVE)
+
     fun onload() {
         if (Bukkit.getPluginManager().getPlugin("ItemsAdder") != null) {
-            register()
+            try {
+                register()
+            } catch (_: Exception) {
+            }
         }
     }
 

@@ -25,13 +25,9 @@ object GsonUtils {
         registerTypeAdapter(
             ItemStack::class.java,
             JsonSerializer<ItemStack> { src, _, _ ->
-                try {
-                    JsonPrimitive(StreamSerializer().serializeItemStack(src))
-                } catch (_: Exception) {
-                    JsonPrimitive(Configuration.empty(type = Type.FAST_JSON).apply {
-                        setItemStack("value", src)
-                    }.saveToString())
-                }
+                JsonPrimitive(Configuration.empty(type = Type.FAST_JSON).apply {
+                    setItemStack("value", src)
+                }.saveToString())
 
 
             }
@@ -39,12 +35,8 @@ object GsonUtils {
         registerTypeAdapter(
             ItemStack::class.java,
             JsonDeserializer { src, _, _ ->
-                try {
-                    StreamSerializer().deserializeItemStack(src.asString)
-                } catch (_: Exception) {
-                    Configuration.loadFromString(src.asString, Type.FAST_JSON)
-                        .getItemStack("value") ?: buildItem(XMaterial.STONE)
-                }
+                Configuration.loadFromString(src.asString, Type.FAST_JSON)
+                    .getItemStack("value") ?: buildItem(XMaterial.STONE)
             }
         )
         registerTypeAdapter(

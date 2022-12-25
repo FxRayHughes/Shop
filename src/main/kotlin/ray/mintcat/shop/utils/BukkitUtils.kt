@@ -162,7 +162,7 @@ fun <T> Linked<T>.inits() {
     this.setNextPage(51) { page, hasNextPage ->
         if (hasNextPage) {
             buildItem(XMaterial.SPECTRAL_ARROW) {
-                name = "§f下一页"
+                name = "§f"
             }
         } else {
             buildItem(XMaterial.ARROW) {
