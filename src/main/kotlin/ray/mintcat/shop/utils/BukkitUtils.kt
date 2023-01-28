@@ -145,7 +145,7 @@ fun Player.inputItem(): ItemStack {
                 name = " "
                 colored()
             }) {
-                it.isCancelled = true
+                isCancelled = true
             }
             onClick(lock = false)
             onClose {

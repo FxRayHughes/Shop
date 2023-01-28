@@ -1,7 +1,7 @@
 plugins {
     `java-library`
     `maven-publish`
-    id("io.izzel.taboolib") version "1.40"
+    id("io.izzel.taboolib") version "1.55"
     id("org.jetbrains.kotlin.jvm") version "1.5.10"
 }
 
@@ -22,8 +22,10 @@ taboolib {
     install("platform-bukkit")
     install("expansion-command-helper")
     install("expansion-javascript")
+    install("expansion-ioc")
+    options("skip-minimize")
     classifier = null
-    version = "6.0.9-82"
+    version = "6.0.10-73"
 }
 
 repositories {
@@ -35,9 +37,9 @@ repositories {
 dependencies {
     compileOnly("ink.ptms.core:v11200:11200")
     compileOnly("com.google.code.gson:gson:2.9.0")
-    compileOnly("com.github.LoneDev6:API-ItemsAdder:3.2.3c")
+    compileOnly("com.github.LoneDev6:API-ItemsAdder:3.2.5")
     compileOnly("com.comphenix.protocol:ProtocolLib:4.7.0")
-    taboo("ink.ptms:um:1.0.0-beta-18")
+    taboo("ink.ptms:um:1.0.0-beta-25")
     compileOnly(kotlin("stdlib"))
     compileOnly(fileTree("libs"))
 }

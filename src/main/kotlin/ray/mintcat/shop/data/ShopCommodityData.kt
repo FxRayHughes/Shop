@@ -17,49 +17,47 @@ import taboolib.module.ui.type.Basic
 import taboolib.platform.util.buildItem
 import taboolib.platform.util.inputBook
 import taboolib.platform.util.isAir
+import taboolib.platform.util.isNotAir
 import java.util.*
 
 class ShopCommodityData(
-    @Expose
     val uuid: UUID,
-    @Expose
+    var id: String? = "未命名商品",
     var item: ShopMaterialData,
-    @Expose
     var price: Double,
-    @Expose
     var buy: Double,
-    @Expose
+    var moneyType: String = "Vault",
     var give: Boolean = true,
-    @Expose
     var showName: String = item.create(null)?.getName() ?: item.id,
-    @Expose
     var info: List<String> = listOf(),
-    @Expose
     var condition: List<String> = listOf(),
-    @Expose
     var action: List<String> = listOf(),
-    @Expose
     var actionBuy: List<String> = listOf(),
-    @Expose
-    var actionSell: List<String> = listOf()
+    var actionSell: List<String> = listOf(),
+    var buyItems: List<ShopMaterialData>? = listOf(),
 ) {
+    init {
+        if (buyItems == null) {
+            buyItems = listOf()
+        }
+    }
+
 
     fun openEdit(player: Player, father: ShopData) {
         player.openMenu<Basic>("正在编辑${uuid}...") {
             map(
+                "O#######L",
+                "###KEN###",
+                "#A#DBCMJ#",
+                "###IHFG##",
                 "#########",
-                "####A####",
-                "#B#C#D#E#",
-                "#M#N#H#I#",
-                "#G#F#J#K#",
-                "####L####",
             )
             set('A', buildItem(item.create(player) ?: buildItem(Material.BARRIER) {
                 name = "&4物品不存在&e ${item.form}:${item.id}"
                 colored()
             }) {
                 lore.add(" ")
-                lore.add("&7点击修改物品")
+                lore.add("&7点击修改物品".color())
             }) {
                 submit(delay = 1) {
                     player.openMenu<Basic>("请放入物品") {
@@ -69,7 +67,7 @@ class ShopCommodityData(
                             name = " "
                             colored()
                         }) {
-                            it.isCancelled = true
+                            isCancelled = true
                         }
                         onClick(lock = false)
                         onClose {
@@ -96,10 +94,51 @@ class ShopCommodityData(
                 }
             }
 
+            set('M', buildItem(XMaterial.CHEST) {
+                this.name = "&7编辑收购物品需求(以物换物)"
+                lore.add(" ")
+                lore.addAll(
+                    buyItems!!.map { "&f- ${it.form}_${it.getNameId(player)} &fX${it.amount}" }
+                )
+                lore.add(" ")
+                lore.add("&7点击修改物品")
+                colored()
+            }) {
+                submit(delay = 1) {
+                    player.openMenu<Basic>("请放入物品") {
+                        rows(6)
+                        onBuild { player, inventory ->
+                            buyItems!!.forEach {
+                                inventory.addItem(it.create(player))
+                            }
+                        }
+                        handLocked(false)
+                        onClick(lock = false)
+                        onClose {
+                            val items = it.inventory.contents.filter { z -> z != null && z.isNotAir() }
+                            if (items.isEmpty()) {
+                                player.error("修改失败")
+                                submit(delay = 1) {
+                                    openEdit(player, father)
+                                }
+                                return@onClose
+                            }
+                            val datas = items.mapNotNull { z -> MaterialFeed.toMaterial(z) }
+                            this@ShopCommodityData.buyItems = datas
+                            player.info("成功修改!")
+                            submit(delay = 1) {
+                                openEdit(player, father)
+                            }
+                        }
+                    }
+                }
+            }
+
             set('B', buildItem(XMaterial.IRON_INGOT) {
                 name = "&7编辑出售价:&f ${price}"
                 lore.add(" ")
                 lore.add("&7点击编辑")
+                colored()
             }) {
                 player.closeInventory()
                 player.inputSign(arrayOf("$price", "出售单价", "第一行输入新的价格", "点击确认确定")) { lens ->
@@ -124,6 +163,7 @@ class ShopCommodityData(
                 name = "&7编辑收购价:&f ${buy}"
                 lore.add(" ")
                 lore.add("&7点击编辑")
+                colored()
             }) {
                 player.closeInventory()
                 player.inputSign(arrayOf("$buy", "回收单价", "第一行输入新的价格", "点击确认确定")) { lens ->
@@ -145,16 +185,36 @@ class ShopCommodityData(
             }
 
             set('D', buildItem(XMaterial.EMERALD) {
-                name = "&7编辑货币类型:&f 暂不支持"
+                name = "&7编辑货币类型:&f ${moneyType}"
                 lore.add(" ")
                 lore.add("&7点击编辑")
-            })
+                colored()
+            }) {
+                player.closeInventory()
+                player.inputSign(arrayOf(moneyType, "货币类型", "第一行输入新的类型", "点击确认确定")) { lens ->
+                    val new = lens[0]
+                    if (new.isEmpty() || new == moneyType) {
+                        player.error("放弃编辑")
+                        submit(delay = 1) {
+                            openEdit(player, father)
+                        }
+                        return@inputSign
+                    }
+                    moneyType = new
+                    player.info("编辑成功!")
+                    submit(delay = 1) {
+                        openEdit(player, father)
+                    }
+                    return@inputSign
+                }
+            }
 
             set('E', buildItem(XMaterial.PAPER) {
                 name = "&7编辑商品额外显示信息:"
                 lore.addAll(info.map { "&f${it.color()}" })
                 lore.add(" ")
                 lore.add("&7点击编辑")
+                colored()
             }) {
                 player.closeInventory()
                 player.infoTitle("&3编辑书本: 修改商品额外信息", "&7此内容显示在商品下方")
@@ -181,6 +241,7 @@ class ShopCommodityData(
                 lore.add(" ")
                 lore.add("&7动作为Kether脚本购买后执行数量次")
                 lore.add("&7点击编辑")
+                colored()
             }) {
                 player.closeInventory()
                 player.infoTitle("&3编辑书本: 修改收购购买后动作", "&7动作为Kether脚本收购后执行数量次")
@@ -206,6 +267,7 @@ class ShopCommodityData(
                 lore.add(" ")
                 lore.add("&7动作为Kether脚本回收后执行数量次")
                 lore.add("&7点击编辑")
+                colored()
             }) {
                 player.closeInventory()
                 player.infoTitle("&3编辑书本: 修改商品出售后动作", "&7动作为Kether脚本物品回收后执行数量次")
@@ -231,6 +293,7 @@ class ShopCommodityData(
                 lore.add(" ")
                 lore.add("&7动作为Kether脚本购买/出售后执行一次")
                 lore.add("&7点击编辑")
+                colored()
             }) {
                 player.closeInventory()
                 player.infoTitle("&3编辑书本: 修改商品购买后动作", "&7动作为Kether脚本购买、出售后执行一次")
@@ -255,6 +318,7 @@ class ShopCommodityData(
                 lore.addAll(condition.map { "&f- ${it.color()}" })
                 lore.add(" ")
                 lore.add("&7点击编辑")
+                colored()
             }) {
                 player.closeInventory()
                 player.infoTitle("&3编辑书本: 修改商品购买条件", "&7条件为Kether脚本返回True则为可购买/出售")
@@ -279,6 +343,7 @@ class ShopCommodityData(
                 name = "&7是否给予展示物品: ${give.display}"
                 lore.add(" ")
                 lore.add("&7点击编辑")
+                colored()
             }) {
                 player.closeInventory()
                 player.info("修改成功!")
@@ -289,9 +354,10 @@ class ShopCommodityData(
             }
 
             set('K', buildItem(XMaterial.NAME_TAG) {
-                name = "&7商品显示名: ${showName}"
+                name = "&7商品显示名:&f ${showName}"
                 lore.add(" ")
                 lore.add("&7点击编辑")
+                colored()
             }) {
                 player.closeInventory()
                 player.inputSign(arrayOf(showName, "", "第一行输入显示名", "点击确认确定")) { lens ->
@@ -312,10 +378,36 @@ class ShopCommodityData(
                 }
             }
 
+            set('N', buildItem(Material.IRON_FENCE) {
+                name = "&7商品索引ID:&f ${id}"
+                lore.add(" ")
+                lore.add("&7点击编辑")
+                colored()
+            }) {
+                player.closeInventory()
+                player.inputSign(arrayOf(id ?: "", "", "第一行输入显示名", "点击确认确定")) { lens ->
+                    val new = lens[0]
+                    if (new.isEmpty() || new == id) {
+                        player.error("内容错误")
+                        submit(delay = 1) {
+                            openEdit(player, father)
+                        }
+                        return@inputSign
+                    }
+                    id = new
+                    player.info("编辑成功!")
+                    submit(delay = 1) {
+                        openEdit(player, father)
+                    }
+                    return@inputSign
+                }
+            }
+
             set('L', buildItem(XMaterial.LAVA_BUCKET) {
                 name = "&4删除商品"
                 lore.add(" ")
                 lore.add("&7点击删除")
+                colored()
             }) {
                 player.closeInventory()
                 player.inputSign(arrayOf("", "", "第一行输入 Y", "点击确认确定")) { lens ->
@@ -335,8 +427,17 @@ class ShopCommodityData(
                     return@inputSign
                 }
             }
-            onClose {
-                Shop.save()
+
+            set('O', buildItem(XMaterial.SLIME_BALL) {
+                name = "&a返回到商店页面"
+                lore.add(" ")
+                lore.add("&7点击跳转")
+                colored()
+            }) {
+                player.closeInventory()
+                submit(delay = 1) {
+                    father.openShop(player)
+                }
             }
         }
     }

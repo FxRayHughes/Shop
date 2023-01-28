@@ -6,13 +6,11 @@ import org.bukkit.entity.Player
 import ray.mintcat.shop.data.ShopData
 import ray.mintcat.shop.utils.error
 import ray.mintcat.shop.utils.info
-import taboolib.common.platform.command.CommandBody
-import taboolib.common.platform.command.CommandHeader
-import taboolib.common.platform.command.mainCommand
-import taboolib.common.platform.command.subCommand
+import taboolib.common.platform.command.*
 import taboolib.expansion.createHelper
+import taboolib.platform.BukkitAdapter
 
-@CommandHeader(name = "shop", aliases = ["sp","rayshop"], permission = "shop.use")
+@CommandHeader(name = "shop", aliases = ["sp", "rayshop"], permission = "shop.use")
 object ShopCommand {
 
     @CommandBody
@@ -22,47 +20,120 @@ object ShopCommand {
 
     @CommandBody
     val open = subCommand {
-        dynamic(optional = false, commit = "ShopName") {
+        dynamic("shop") {
             suggestion<CommandSender>(uncheck = true) { sender, context ->
-                Shop.datas.map { it.name }
+                Shop.datas.keys().toList()
             }
-            dynamic {
+            player("player") {
                 suggestion<CommandSender> { sender, context ->
                     Bukkit.getOnlinePlayers().map { it.name }
                 }
                 execute<CommandSender> { sender, context, argument ->
-                    val target = Bukkit.getPlayerExact(context.argument(0)) ?: return@execute kotlin.run {
-                        sender.error("玩家 &f${context.argument(0)}&7 不存在!")
+                    val target = Bukkit.getPlayer(context.player("player").uniqueId)
+                    val data = Shop.datas.getOrPut(context["shop"]) {
+                        ShopData(context["shop"])
                     }
-                    Shop.datas.firstOrNull { it.name == context.argument(-1) } ?: kotlin.run {
-                        Shop.datas.add(ShopData(context.argument(-1)))
-                    }
-                    val data = Shop.datas.first { it.name == context.argument(-1) }
-                    data.openShop(target)
+                    (data as ShopData).openShop(target)
                 }
             }
             execute<Player> { sender, context, argument ->
-                Shop.datas.firstOrNull { it.name == context.argument(0) } ?: kotlin.run {
-                    Shop.datas.add(ShopData(context.argument(0)))
+                val data = Shop.datas.getOrPut(context["shop"]) {
+                    ShopData(context["shop"])
                 }
-                val data = Shop.datas.first { it.name == context.argument(0) }
-                data.openShop(sender)
+                (data as ShopData).openShop(sender)
+            }
+        }
+    }
+
+    @CommandBody
+    val buy = subCommand {
+        dynamic("shop") {
+            suggestion<CommandSender>(uncheck = true) { sender, context ->
+                Shop.datas.keys().toList()
+            }
+            dynamic("commodity") {
+                suggestion<CommandSender> { sender, context ->
+                    val data = Shop.datas.getOrPut(context["shop"]) {
+                        ShopData(context["shop"])
+                    } as ShopData
+                    data.commodity.mapNotNull { it.id }
+                }
+                int("amount") {
+                    player("player") {
+                        suggestion<CommandSender> { sender, context ->
+                            Bukkit.getOnlinePlayers().map { it.name }
+                        }
+                        execute<CommandSender> { sender, context, argument ->
+                            val target = Bukkit.getPlayer(context.player("player").uniqueId)
+                            val data = Shop.datas.getOrPut(context["shop"]) {
+                                ShopData(context["shop"])
+                            } as ShopData
+                            val element = data.commodity.firstOrNull { it.id == context["commodity"] }!!
+                            data.buy(target, context.int("amount"), element)
+                        }
+                    }
+                    execute<Player> { sender, context, argument ->
+                        val data = Shop.datas.getOrPut(context["shop"]) {
+                            ShopData(context["shop"])
+                        } as ShopData
+                        val element = data.commodity.firstOrNull { it.id == context["commodity"] }!!
+                        data.buy(sender, context.int("amount"), element)
+                    }
+                }
+            }
+        }
+    }
+
+    @CommandBody
+    val sell = subCommand {
+        dynamic("shop") {
+            suggestion<CommandSender>(uncheck = true) { sender, context ->
+                Shop.datas.keys().toList()
+            }
+            dynamic("commodity") {
+                suggestion<CommandSender> { sender, context ->
+                    val data = Shop.datas.getOrPut(context["shop"]) {
+                        ShopData(context["shop"])
+                    } as ShopData
+                    data.commodity.mapNotNull { it.id }
+                }
+                int("amount") {
+                    player("player") {
+                        suggestion<CommandSender> { sender, context ->
+                            Bukkit.getOnlinePlayers().map { it.name }
+                        }
+                        execute<CommandSender> { sender, context, argument ->
+                            val target = Bukkit.getPlayer(context.player("player").uniqueId)
+                            val data = Shop.datas.getOrPut(context["shop"]) {
+                                ShopData(context["shop"])
+                            } as ShopData
+                            val element = data.commodity.firstOrNull { it.id == context["commodity"] }!!
+                            data.sell(target, context.int("amount"), element)
+                        }
+                    }
+                    execute<Player> { sender, context, argument ->
+                        val data = Shop.datas.getOrPut(context["shop"]) {
+                            ShopData(context["shop"])
+                        } as ShopData
+                        val element = data.commodity.firstOrNull { it.id == context["commodity"] }!!
+                        data.sell(sender, context.int("amount"), element)
+                    }
+                }
             }
         }
     }
 
     @CommandBody
     val remove = subCommand {
-        dynamic(optional = false, commit = "ShopName") {
+        dynamic(optional = false, comment = "ShopName") {
             suggestion<CommandSender> { sender, context ->
-                Shop.datas.map { it.name }
+                Shop.datas.keys().toList()
             }
             execute<CommandSender> { sender, context, argument ->
-                val data = Shop.datas.firstOrNull { it.name == context.argument(0) } ?: return@execute kotlin.run {
+                Shop.datas[context.argument(0)] ?: return@execute kotlin.run {
                     sender.error("商店不存在!")
                 }
-                Shop.datas.remove(data)
-                Shop.save()
+                Shop.datas.remove(context.argument(0))
                 sender.info("商店以删除!")
             }
         }

@@ -7,7 +7,9 @@ import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
+import taboolib.module.nms.getName
 import taboolib.platform.util.countItem
+import taboolib.platform.util.takeItem
 
 object MaterialMythic : Material {
 
@@ -44,8 +46,21 @@ object MaterialMythic : Material {
         }
     }
 
+    override fun getShowName(id: String, user: Player?): String {
+        return getItem(id, 1, user)?.getName() ?: id
+    }
+
+    override fun getNameId(id: String, user: Player?): String {
+        return id
+    }
+
     override fun hasItem(inventory: Inventory, id: String, amount: Int): Boolean {
         return amount(inventory, id) >= amount
+    }
+    override fun takeItem(inventory: Inventory, id: String, amount: Int): Boolean {
+        return inventory.takeItem(amount) {
+            isItem(it, id)
+        }
     }
 
 }

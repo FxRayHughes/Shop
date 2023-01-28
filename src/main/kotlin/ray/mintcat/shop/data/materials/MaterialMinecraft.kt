@@ -3,13 +3,15 @@ package ray.mintcat.shop.data.materials
 import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
-import ray.mintcat.shop.serializable.GsonUtils
+import org.bukkit.util.io.BukkitObjectInputStream
+import org.bukkit.util.io.BukkitObjectOutputStream
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
-import taboolib.library.xseries.parseToMaterial
-import taboolib.platform.util.buildItem
-import taboolib.platform.util.countItem
-import taboolib.platform.util.isAir
+import taboolib.module.nms.getName
+import taboolib.platform.util.*
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.util.*
 
 object MaterialMinecraft : Material {
 
@@ -54,16 +56,48 @@ object MaterialMinecraft : Material {
         }
     }
 
+    override fun getNameId(id: String, user: Player?): String {
+        return getItem(id, 1, user).getName()
+    }
+
+    override fun getShowName(id: String, user: Player?): String {
+        return getItem(id, 1, user).getName()
+    }
+
     override fun hasItem(inventory: Inventory, id: String, amount: Int): Boolean {
         return amount(inventory, id) >= amount
     }
 
     fun ItemStack.toStringSave(): String {
-        return GsonUtils.gson.toJson(this, ItemStack::class.javaObjectType)
+        return this.serializeToString()
     }
 
     fun String.toItemStack(): ItemStack {
-        return GsonUtils.gson.fromJson(this, ItemStack::class.javaObjectType)
+        return this.deserializeToItemStack()
     }
+
+    fun ItemStack.serializeToString(): String {
+        val outputStream = ByteArrayOutputStream()
+        val bukkitOutputStream = BukkitObjectOutputStream(outputStream)
+
+        bukkitOutputStream.writeObject(this)
+        bukkitOutputStream.flush()
+
+        return Base64.getEncoder().encodeToString(outputStream.toByteArray())
+    }
+
+    fun String.deserializeToItemStack(): ItemStack {
+        val inputStream = ByteArrayInputStream(Base64.getDecoder().decode(this))
+        val bukkitInputStream = BukkitObjectInputStream(inputStream)
+
+        return bukkitInputStream.readObject() as ItemStack
+    }
+
+    override fun takeItem(inventory: Inventory, id: String, amount: Int): Boolean {
+        return inventory.takeItem(amount) {
+            isItem(it, id)
+        }
+    }
+
 
 }

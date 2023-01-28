@@ -1,25 +1,28 @@
 package ray.mintcat.shop.data.materials
 
 import dev.lone.itemsadder.api.CustomStack
+import github.saukiya.sxitem.SXItem
+import github.saukiya.sxitem.data.item.ItemManager
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
+import taboolib.common.platform.function.pluginId
 import taboolib.module.nms.getName
 import taboolib.platform.util.countItem
 import taboolib.platform.util.takeItem
 
-object MaterialItemsAdder : Material {
+object MaterialSXItem : Material {
 
     override val from: String
-        get() = "ItemsAdder"
+        get() = "SXItem"
 
 
     @Awake(LifeCycle.ACTIVE)
     fun onload() {
-        if (Bukkit.getPluginManager().getPlugin("ItemsAdder") != null) {
+        if (Bukkit.getPluginManager().getPlugin("SX-Item") != null) {
             try {
                 register()
             } catch (_: Exception) {
@@ -28,15 +31,11 @@ object MaterialItemsAdder : Material {
     }
 
     override fun getId(itemStack: ItemStack): String? {
-        return CustomStack.byItemStack(itemStack)?.namespacedID
-    }
-
-    val nameList by lazy {
-        CustomStack.getNamespacedIdsInRegistry()
+        return SXItem.getItemManager().getGenerator(itemStack)?.name
     }
 
     override val itemList: List<ItemStack>
-        get() = nameList.mapNotNull { CustomStack.getInstance(it)?.itemStack }
+        get() = listOf()
 
     override fun isItem(itemStack: ItemStack, id: String): Boolean {
         return (getId(itemStack) ?: return false) == id
@@ -49,7 +48,7 @@ object MaterialItemsAdder : Material {
     }
 
     override fun getItem(id: String, amount: Int, user: Player?): ItemStack? {
-        return CustomStack.getInstance(id)?.itemStack?.apply {
+        return SXItem.getItemManager().getItem(id, user!!)?.apply {
             this.amount = amount
         }
     }
