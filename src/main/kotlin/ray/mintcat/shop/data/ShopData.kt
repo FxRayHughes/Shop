@@ -1,33 +1,44 @@
 package ray.mintcat.shop.data
 
-import com.google.gson.annotations.Expose
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import ray.mintcat.shop.Shop
+import ray.mintcat.shop.UIReader
 import ray.mintcat.shop.data.materials.MaterialFeed
 import ray.mintcat.shop.utils.*
 import taboolib.common.platform.function.submit
 import taboolib.expansion.ioc.annotation.Component
 import taboolib.library.xseries.XMaterial
+import taboolib.module.chat.colored
 import taboolib.module.nms.getName
 import taboolib.module.nms.inputSign
 import taboolib.module.ui.openMenu
 import taboolib.module.ui.type.Basic
 import taboolib.module.ui.type.Linked
-import taboolib.platform.util.buildItem
-import taboolib.platform.util.giveItem
-import taboolib.platform.util.takeItem
+import taboolib.platform.util.*
 import java.util.*
 
 @Component(index = "name")
 class ShopData(
     val name: String,
     val commodity: MutableList<ShopCommodityData> = mutableListOf(),
+    var showName: String? = name,
 ) {
 
-    fun openShop(player: Player) {
-        player.openMenu<Linked<ShopCommodityData>>(name) {
-            inits()
+    fun getShowNameInfo(): String {
+        return showName ?: name
+    }
+
+    fun openShop(player: Player, edit: Boolean = false) {
+        val editName = player.asLangText("shopui-edit")
+        val uiName = if (edit){
+            editName + getShowNameInfo()
+        }else{
+            getShowNameInfo()
+        }
+        player.openMenu<Linked<ShopCommodityData>>(uiName) {
+            val config = UIReader.getUIConfig(this@ShopData)
+            inits(this@ShopData, player)
             elements {
                 if (player.isOp) {
                     commodity
@@ -37,46 +48,60 @@ class ShopData(
             }
             onGenerate { player, element, index, slot ->
                 buildItem(element.item.create(player) ?: buildItem(Material.BARRIER) {
-                    name = "&4物品不存在&e ${element.item.form}:${element.item.id}"
+                    name = player.asLangText("shopui-noitem", element.item.form, element.item.id)
                     colored()
                 }) {
                     name = element.showName
                     if (element.info.isNotEmpty()) {
-                        lore.addAll(element.info.map { "&f${it.color()}".color() })
+                        lore.addAll(element.info.map { "&f${it}" })
                     }
                     lore.add(" ")
                     if (element.price > 0.0) {
-                        lore.add("&7出售价: &f${element.price} (${Vault.getName(element.moneyType)})/个".color())
-                        lore.add("&8左键购买".color())
+                        lore.addAll(
+                            player.asLangTextList(
+                                "shopui-buy",
+                                element.price,
+                                Vault.getName(element.moneyType)
+                            )
+                        )
                     }
                     if (element.buyItems?.isNotEmpty() == true) {
-                        lore.add("&7购买需求:".color())
+                        lore.addAll(player.asLangTextList("shopui-buyItem-title"))
                         element.buyItems!!.forEach {
-                            lore.add("&f- ${it.getNameShow(player)} &fX${it.amount}")
+                            lore.add(player.asLangText("shopui-buyItem-info", it.getNameShow(player), it.amount))
                         }
                     }
                     if (element.buy > 0.0) {
-                        lore.add("&7回收价: &f${element.buy} (${Vault.getName(element.moneyType)})/个".color())
-                        lore.add(
-                            "&8右键出售 (&7最大${
-                                element.item.lib().amount(player.inventory, element.item.id)
-                            }&8)".color()
+                        val maxBuy = element.item.lib().amount(player.inventory, element.item.id)
+                        lore.addAll(
+                            player.asLangTextList(
+                                "shopui-sell",
+                                element.buy,
+                                Vault.getName(element.moneyType),
+                                maxBuy
+                            )
                         )
                     }
-                    if (player.isOp) {
-                        lore.add("&4以下内容仅管理员可见".color())
-                        lore.add("&cUUID: &f${element.uuid}".color())
-                        if (element.action.isNotEmpty()) {
-                            lore.add("&c动作:".color())
-                            lore.addAll(element.action.map { "&f-> $it" })
-                        }
+                    if (player.isOp && edit) {
+                        lore.addAll(
+                            player.asLangTextList(
+                                "shopui-edit-normal",
+                                element.uuid,
+                                element.id ?: element.uuid,
+                            )
+                        )
                         if (element.condition.isNotEmpty()) {
-                            lore.add("&c条件:".color())
-                            lore.addAll(element.condition.map { "&f-> $it" })
+                            lore.addAll(
+                                player.asLangTextList(
+                                    "shopui-edit-condition-title",
+                                )
+                            )
+                            lore.addAll(element.condition.map {
+                                player.asLangText("shopui-edit-condition-info", it)
+                            })
                         }
-                        lore.add(" ")
-                        lore.add("&4&lShift+右键打开编辑模式")
-                        lore.add("&e&lShift+左键复制到粘贴板")
+
+
                     }
                     colored()
                 }.apply {
@@ -89,12 +114,39 @@ class ShopData(
                 }
             }
 
-            if (player.isOp) {
-                set(4, buildItem(XMaterial.MAP) {
-                    name = "&6创建新商品 +"
+            if (player.isOp && edit) {
+                val rn = config.getString("ReName")?.asChar() ?: 'E'
+                set(getFirstSlot(rn), buildItem(XMaterial.NAME_TAG) {
+                    name = player.asLangText("manageui-rename-name")
                     if (Shop.copy[player.uniqueId] != null) {
-                        lore.add("")
-                        lore.add("&eShift+右键粘贴")
+                        lore.addAll(player.asLangTextList("manageui-rename-lore"))
+                    }
+                    colored()
+                }) {
+                    isCancelled = true
+                    player.closeInventory()
+                    player.infoTitle(
+                        player.asLangText("manageui-rename-title-main").colored(),
+                        player.asLangText("manageui-rename-title-sub").colored(),
+                    )
+                    player.inputBook(
+                        player.asLangText("manageui-rename-book-name").colored(),
+                        true,
+                        listOf(getShowNameInfo())
+                    ) {
+                        val new = it.getOrElse(0) { getShowNameInfo() }
+                        showName = new
+                        player.sendMessageAsLang("systemmessage-edit-success", new)
+                        submit(delay = 1) {
+                            openShop(player,edit)
+                        }
+                    }
+                }
+                val sl = config.getString("CreateItem")?.asChar() ?: 'A'
+                set(getFirstSlot(sl), buildItem(XMaterial.MAP) {
+                    name = player.asLangText("manageui-create-name")
+                    if (Shop.copy[player.uniqueId] != null) {
+                        lore.addAll(player.asLangTextList("manageui-create-lore"))
                     }
                     colored()
                 }) {
@@ -112,13 +164,13 @@ class ShopData(
                             )
                         )
                         submit(delay = 1) {
-                            openShop(player)
+                            openShop(player,edit)
                         }
                         return@set
                     }
                     player.closeInventory()
                     submit(delay = 1) {
-                        player.openMenu<Basic>("请放入物品") {
+                        player.openMenu<Basic>(player.asLangText("manageui-import-title").colored()) {
                             map("####@####")
                             handLocked(false)
                             set('#', buildItem(XMaterial.BLACK_STAINED_GLASS_PANE) {
@@ -130,16 +182,16 @@ class ShopData(
                             onClick(lock = false)
                             onClose {
                                 val item = it.inventory.getItem(4) ?: return@onClose kotlin.run {
-                                    player.error("创建失败")
+                                    player.sendMessageAsLang("systemmessage-create-error")
                                     submit(delay = 1) {
-                                        openShop(player)
+                                        openShop(player,edit)
                                     }
                                 }
                                 val create = MaterialFeed.toMaterial(item)
                                 if (create == null) {
-                                    player.error("创建失败")
+                                    player.sendMessageAsLang("systemmessage-create-error")
                                     submit(delay = 1) {
-                                        openShop(player)
+                                        openShop(player,edit)
                                     }
                                     return@onClose
                                 }
@@ -147,9 +199,9 @@ class ShopData(
                                 val commoditys =
                                     ShopCommodityData(id, id.toString(), create, 0.0, 0.0)
                                 commodity.add(commoditys)
-                                player.info("创建成功! ${item.getName()}")
+                                player.sendMessageAsLang("systemmessage-create-success", item.getName())
                                 submit(delay = 1) {
-                                    openShop(player)
+                                    openShop(player,edit)
                                 }
                             }
                         }
@@ -161,9 +213,9 @@ class ShopData(
                 if (event.clickEvent().isLeftClick && event.clickEvent().isShiftClick && player.isOp) {
                     player.closeInventory()
                     Shop.copy[player.uniqueId] = element
-                    player.info("已复制到粘贴板!")
+                    player.sendMessageAsLang("manageui-copy")
                     submit(delay = 1) {
-                        openShop(player)
+                        openShop(player,edit)
                     }
                     return@onClick
                 }
@@ -178,24 +230,19 @@ class ShopData(
                     //回收
                     player.closeInventory()
                     player.inputSign(
-                        arrayOf(
-                            "",
-                            "单价: ${element.buy}/个",
-                            "第一行输入出售数量",
-                            "点击确认进行出售"
-                        )
+                        player.asLangTextList("sing-sell", element.buy).colored().toTypedArray()
                     ) { len ->
                         val amount = len[0].replace("[^0-9]", "").toIntOrNull() ?: 0
                         if (amount <= 0) {
-                            player.error("请输入正确的数量!")
+                            player.sendMessageAsLang("systemmessage-sing-number")
                             submit(delay = 1) {
-                                openShop(player)
+                                openShop(player,edit)
                             }
                             return@inputSign
                         }
                         sell(player, amount, element)
                         submit(delay = 1) {
-                            openShop(player)
+                            openShop(player,edit)
                         }
                     }
                     return@onClick
@@ -204,24 +251,19 @@ class ShopData(
                     //出售
                     player.closeInventory()
                     player.inputSign(
-                        arrayOf(
-                            "",
-                            "单价: ${element.price}/个",
-                            "第一行输入购买数量",
-                            "点击确认进行购买"
-                        )
+                        player.asLangTextList("sing-sell", element.price).colored().toTypedArray()
                     ) { len ->
                         val amount = len[0].replace("[^0-9]", "").toIntOrNull() ?: 0
                         if (amount <= 0) {
-                            player.error("请输入正确的数量!")
+                            player.sendMessageAsLang("systemmessage-sing-number")
                             submit(delay = 1) {
-                                openShop(player)
+                                openShop(player,edit)
                             }
                             return@inputSign
                         }
                         buy(player, amount, element)
                         submit(delay = 1) {
-                            openShop(player)
+                            openShop(player,edit)
                         }
                     }
                     return@onClick
@@ -233,7 +275,7 @@ class ShopData(
 
     fun sell(player: Player, amount: Int, element: ShopCommodityData): Boolean {
         if (element.item.amount(player) < amount) {
-            player.error("你所拥有的物品不足!")
+            player.sendMessageAsLang("systemmessage-item-nohave")
             return false
         }
         player.inventory.takeItem(amount) {
@@ -245,37 +287,37 @@ class ShopData(
             element.actionSell.replace("=money=", money.toString()).toList().eval(player)
         }
         element.action.replace("=money=", money.toString()).toList().eval(player)
-        player.info(
-            "出售成功 出售${element.showName}X${amount} &7共获得&f ${money}${
-                Vault.getName(
-                    element.moneyType
-                )
-            }"
+        player.sendMessageAsLang(
+            "systemmessage-sell-success",
+            element.showName,
+            amount,
+            money, Vault.getName(element.moneyType)
         )
         return true
     }
 
     fun buy(player: Player, amount: Int, element: ShopCommodityData): Boolean {
         if (amount <= 0) {
-            player.error("你输入了错误的数量")
+            player.sendMessageAsLang("systemmessage-sing-number")
             return false
         }
         val money = amount * element.price
         if (Vault.getMoney(player, element.moneyType) < money) {
-            player.error(
-                "你缺少 &f${
-                    Vault.getMoney(
-                        player,
-                        element.moneyType
-                    ) - (amount * element.price)
-                }${Vault.getName(element.moneyType)}"
+            val need = Vault.getMoney(player, element.moneyType) - (amount * element.price)
+            player.sendMessageAsLang(
+                "systemmessage-buy-no_money",
+                need, Vault.getName(element.moneyType)
             )
             return false
         }
         if (element.buyItems?.isNotEmpty() == true) {
             element.buyItems!!.forEach {
                 if (!it.lib().hasItem(player.inventory, it.id, it.amount * amount)) {
-                    player.error("你缺少&f ${it.getNameShow(player)}")
+                    val need = (it.amount * amount) - (it.lib().amount(player.inventory, it.id))
+                    player.sendMessageAsLang(
+                        "systemmessage-buy-noitem",
+                        it.getNameShow(player), need
+                    )
                     return false
                 }
             }
@@ -293,12 +335,11 @@ class ShopData(
                 element.actionBuy.replace("=money=", money.toString()).toList().eval(player)
             }
             element.action.replace("=money=", money.toString()).toList().eval(player)
-            player.info(
-                "购买成功 购买&f${element.showName}X${amount} &7共花费&f ${amount * element.price}${
-                    Vault.getName(
-                        element.moneyType
-                    )
-                }"
+            player.sendMessageAsLang(
+                "systemmessage-buy-success",
+                element.showName, amount,
+                amount * element.price,
+                Vault.getName(element.moneyType)
             )
         }
         return true

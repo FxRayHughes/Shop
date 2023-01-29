@@ -1,0 +1,133 @@
+systemmessage-create-success: '§8[§a 商店 §8]§7 创建成功! {0}'
+systemmessage-create-error: '§8[§4 商店 §8]§7 创建失败'
+systemmessage-buy-noitem: '§8[§4 商店 §8]§7 你还缺少 &f{0}X{1}'
+systemmessage-buy-no_money: '§8[§4 商店 §8]§7 你还缺少 &f{0}{1}'
+systemmessage-buy-success: '&8[§4 商店 §8]§7 购买成功 购买&f{0}X{1} &7共花费&f {2}{3}'
+systemmessage-sell-success: '&8[§4 商店 §8]§7 出售成功 出售{0}X{1} &7共获得&f {2}{3}'
+systemmessage-edit-error: '§8[§4 商店 §8]§7 修改失败'
+systemmessage-edit-success: '§8[§a 商店 §8]§7 修改成功! {0}'
+systemmessage-edit-giveup: '§8[§4 商店 §8]§7 放弃修改'
+systemmessage-edit-remove-error: '§8[§4 商店 §8]§7 取消删除'
+systemmessage-edit-remove-success: '§8[§a 商店 §8]§7 删除成功'
+systemmessage-sing-nonumber: '§8[§4 商店 §8]§7 请输入正确的数字!'
+systemmessage-sing-number: '§8[§4 商店 §8]§7 请输入正确的数量!'
+systemmessage-item-nohave: '§8[§4 商店 §8]§7 你所拥有的物品不足!'
+
+manageui-create-name: '&6创建新商品 +'
+manageui-create-lore:
+  - ' '
+  - '&eShift+右键粘贴'
+manageui-edit-sell: '&7编辑回收价:&f {0}'
+manageui-edit-edit: '&7点击修改本项'
+manageui-edit-main-lore:
+  - ' '
+  - '&7点击修改物品'
+manageui-edit-main-noitem: '&4物品不存在&e {0}:{1}'
+manageui-edit-buy: '&7编辑出售价:&f {0}'
+manageui-edit-title: '正在编辑{2}...'
+manageui-edit-itemneed: '&7编辑收购物品需求(以物换物)'
+manageui-edit-moneytype: '&7编辑货币类型:&f {0}'
+manageui-edit-addinfo: '&7编辑商品额外显示信息:'
+manageui-edit-addinfo-main: '&3编辑书本: 修改商品额外信息'
+manageui-edit-addinfo-sub: '&f此内容显示在商品下方'
+manageui-edit-addinfo-book: '&7编辑商品额外显示信息'
+manageui-edit-action-buy: "&7编辑商品收购后动作"
+manageui-edit-action-buy-info: "&7动作为Kether脚本购买后执行数量次"
+manageui-edit-action-buy-book: "&3编辑书本: 修改收购后动作"
+manageui-edit-action-sell: "&7编辑商品出售后动作"
+manageui-edit-action-sell-info: "&7动作为Kether脚本出售后执行数量次"
+manageui-edit-action-sell-book: "&3编辑书本: 修改出售后动作"
+manageui-edit-action: "&7编辑商品固有动作"
+manageui-edit-action-info: "&7动作为Kether脚本购买/出售后执行一次"
+manageui-edit-action-book: "&3编辑书本: 修改固有动作"
+manageui-edit-condition: "&7编辑商品固有动作"
+manageui-edit-condition-info: "&7动作为Kether脚本购买/出售后执行一次"
+manageui-edit-condition-book: "&3编辑书本: 修改固有动作"
+manageui-edit-giveitem: "&7是否给予展示物品: {0}"
+manageui-edit-showname: "&7商品显示名:&f {0}"
+manageui-edit-indexname: "&7商品索引ID:&f {0}"
+manageui-edit-remove-name: "&4删除商品"
+manageui-edit-remove-info: "&7点击删除"
+manageui-edit-back-name: "&a返回到商店页面"
+manageui-edit-back-info: "&7点击跳转"
+
+manageui-rename-name: '&6修改展示名'
+manageui-import-title: '请放入物品'
+manageui-rename-lore:
+  - ' '
+  - '&e点击进行修改'
+manageui-rename-title-main: '打开书本输入名称'
+manageui-rename-book-name: '&6修改展示名'
+manageui-rename-title-sub: '保存书本保存数据'
+manageui-copy: '§8[§a 商店 §8]§7 已复制到粘贴板!'
+
+shopui-edit: "编辑模式: "
+shopui-noitem: '&4物品不存在&e {0}:{1}'
+shopui-buy:
+  - '&7出售价: &f{0} ({1})/个'
+  - '&8左键购买'
+shopui-buyItem-info: '&f- {0} &fX{1}'
+shopui-buyItem-title:
+  - '&7购买物品需求:'
+shopui-sell:
+  - '&7回收价: &f{0} ({1})/个'
+  - '&8右键出售 (&7最大{2}&8)'
+shopui-edit-normal:
+  - '&4以下内容仅管理员可见'
+  - '&cUUID: {0}'
+  - '&cID: {1}'
+  - ' '
+  - '&4&lShift+右键打开编辑模式'
+  - '&e&lShift+左键复制到粘贴板'
+shopui-edit-condition-title:
+  - '&c条件:'
+shopui-edit-condition-info: '&f-> {0}'
+
+sing-buy:
+  - '&r'
+  - '单价: {0}/个'
+  - '第一行输入购买数量'
+  - '点击确认进行购买'
+sing-buyedit:
+  - '{0}'
+  - '出售单价'
+  - '第一行输入新的价格'
+  - '点击确认进行保存'
+sing-selledit:
+  - '{0}'
+  - '回收单价'
+  - '第一行输入新的价格'
+  - '点击确认进行保存'
+sing-sell:
+  - '&r'
+  - '单价: {0}/个'
+  - '第一行输入出售数量'
+  - '点击确认进行出售'
+sing-moneytype:
+  - '{0}'
+  - '货币类型'
+  - '第一行输入新的类型'
+  - '点击确认进行保存'
+sing-showname:
+  - '{0}'
+  - '显示名称'
+  - '第一行输入显示名'
+  - '点击确认进行保存'
+sing-indexname:
+  - '{0}'
+  - '索引名称'
+  - '第一行输入索引名'
+  - '点击确认进行保存'
+sing-remove:
+  - ' '
+  - '删除复选框'
+  - '第一行输入 Y'
+  - '点击确认进行删除'
+
+command-list: "§8[§a 商店 §8]§7 {0}商店包含的商品:"
+command-list-info: "§8[§a 商店 §8]§7 &f- {0} &7({1})"
+command-listshop: "§8[§a 商店 §8]§7 商店列表:"
+command-listshop-info: "§8[§a 商店 §8]§7 &f- {0} &7({1})"
+command-remove-error: "§8[§4 商店 §8]§7 商店不存在!"
+command-remove-success: "§8[§a 商店 §8]§7 删除成功！"
+command-reload: '§8[§a 商店 §8]§7 重载成功！'

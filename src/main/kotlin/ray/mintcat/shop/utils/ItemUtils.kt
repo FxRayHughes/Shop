@@ -1,10 +1,15 @@
 package ray.mintcat.shop.utils
 
 import org.bukkit.Material
+import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.meta.ItemMeta
 import taboolib.module.nms.ItemTagData
 import taboolib.module.nms.getItemTag
+import taboolib.platform.compat.replacePlaceholder
 import taboolib.platform.util.isAir
+import taboolib.platform.util.modifyLore
+import taboolib.platform.util.modifyMeta
 
 
 fun ItemStack?.ifAir(): ItemStack? {
@@ -96,4 +101,17 @@ fun ItemStack.set(key: String, value: Any?) {
         }
     }
     tag.saveTo(this)
+}
+
+fun ItemStack?.papi(player: Player): ItemStack? {
+    if (this == null) {
+        return null
+    }
+    modifyMeta<ItemMeta> {
+        displayName = displayName.replacePlaceholder(player)
+    }
+    modifyLore {
+        replacePlaceholder(player)
+    }
+    return this
 }

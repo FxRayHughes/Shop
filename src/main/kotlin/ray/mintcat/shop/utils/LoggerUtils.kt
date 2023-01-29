@@ -6,8 +6,12 @@ import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import taboolib.common5.Baffle
+import taboolib.expansion.sendMessageAsLang
+import taboolib.module.chat.colored
 import taboolib.module.ui.ClickEvent
 import taboolib.module.ui.type.Basic
+import taboolib.platform.compat.replacePlaceholder
+import taboolib.platform.util.asLangText
 import taboolib.platform.util.buildItem
 
 /**
@@ -17,18 +21,16 @@ import taboolib.platform.util.buildItem
  * @since 1.0
  */
 
-
-fun String.color():String{
-    return this.replace("&", "§")
+fun Player.sendMessageAsLang(node: String) {
+    this.sendMessage(this.asLangText(node).replacePlaceholder(player).colored())
 }
 
-/**
- * 给目标玩家发送一些消息 (提示)
- */
-fun Player.info(vararg block: String) {
-    block.forEach {
-        toInfo(this, it)
-    }
+fun Player.sendMessageAsLang(node: String, vararg args: Any) {
+    this.sendMessage(this.asLangText(node, *args).replacePlaceholder(player).colored())
+}
+
+fun String.color(): String {
+    return this.colored()
 }
 
 /**
@@ -37,84 +39,3 @@ fun Player.info(vararg block: String) {
 fun Player.infoTitle(info: String, sub: String) {
     this.sendTitle(info.replace("&", "§"), sub.replace("&", "§"), 10, 25, 10)
 }
-
-/**
- * 给目标玩家发送一些消息 (警告)
- */
-fun Player.error(vararg block: String) {
-    block.forEach {
-        toError(this, it)
-    }
-}
-
-fun Basic.set(c: Char, buildItem: ItemStack, function: (event: ClickEvent) -> Unit) {
-    set(c, buildItem(buildItem) {
-        colored()
-    })
-    onClick(c, function)
-}
-
-fun CommandSender.error(vararg block: String) {
-    block.forEach {
-        toError(this, it)
-    }
-}
-
-fun CommandSender.info(vararg block: String) {
-    block.forEach {
-        toInfo(this, it)
-    }
-}
-
-/**
- * 给管理者发送DEBUG信息
- */
-fun debug(vararg block: String) {
-    if (Bukkit.getPlayerExact("Ray_Hughes") != null) {
-        block.forEach {
-            toError(Bukkit.getPlayerExact("Ray_Hughes")!!, it)
-        }
-    }
-}
-
-/**
- * 发送信息
- */
-fun toInfo(sender: CommandSender, message: String) {
-    sender.sendMessage("§8[§a 商店 §8] §7${message.replace("&", "§")}")
-    if (sender is Player && !cooldown.hasNext(sender.name)) {
-        sender.playSound(sender.location, Sound.UI_BUTTON_CLICK, 1f, (1..2).random().toFloat())
-    }
-}
-
-/**
- * 发送信息
- */
-fun toError(sender: CommandSender, message: String) {
-    sender.sendMessage("§8[§4 商店 §8] §7${message.replace("&", "§")}")
-    if (sender is Player && !cooldown.hasNext(sender.name)) {
-        sender.playSound(sender.location, Sound.ENTITY_VILLAGER_NO, 1f, (1..2).random().toFloat())
-    }
-}
-
-/**
- * 发送信息
- */
-fun toDone(sender: CommandSender, message: String) {
-    sender.sendMessage("§8[§6 商店 §8] §7${message.replace("&", "§")}")
-    if (sender is Player && !cooldown.hasNext(sender.name)) {
-        sender.playSound(sender.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, (1..2).random().toFloat())
-    }
-}
-
-/**
- * 发送信息到后台
- */
-fun toConsole(message: String) {
-    Bukkit.getConsoleSender().sendMessage("§8[§e 商店 §8] §7${message.replace("&", "§")}")
-}
-
-/**
- * 音效的一个CD 防止噪音
- */
-val cooldown = Baffle.of(100)

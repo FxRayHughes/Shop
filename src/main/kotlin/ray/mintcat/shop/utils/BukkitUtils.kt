@@ -7,11 +7,13 @@ import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.Vector
+import ray.mintcat.shop.UIReader
+import ray.mintcat.shop.data.ShopData
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common.platform.function.submit
 import taboolib.common5.Coerce
 import taboolib.library.xseries.XMaterial
-import taboolib.module.chat.colored
+import taboolib.library.xseries.getItemStack
 import taboolib.module.chat.uncolored
 import taboolib.module.configuration.Configuration
 import taboolib.module.kether.KetherShell
@@ -22,7 +24,6 @@ import taboolib.module.ui.type.Basic
 import taboolib.module.ui.type.Linked
 import taboolib.platform.compat.replacePlaceholder
 import taboolib.platform.util.buildItem
-import taboolib.platform.util.inventoryCenterSlots
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
@@ -78,25 +79,6 @@ fun toLocation(source: String): Location {
             getOrElse(2) { "0" }.asDouble(),
             getOrElse(3) { "0" }.asDouble()
         )
-    }
-}
-
-val tpMap = HashMap<UUID, Location>()
-
-//延迟传送 单位s
-fun Player.tpDelay(mint: Int, locationTo: Location) {
-    tpMap[this.uniqueId] = this.location
-    this.info("${mint}s 后开始传送 请勿移动!")
-    submit(delay = mint.toLong() * 20) {
-        val a = this@tpDelay.location
-        val b = tpMap[this@tpDelay.uniqueId] ?: return@submit
-        if (a.x != b.x || a.y != b.y || a.z != b.z) {
-            this@tpDelay.error("由于您的移动已取消传送!")
-            tpMap.remove(this@tpDelay.uniqueId)
-            return@submit
-        }
-        this@tpDelay.teleport(locationTo)
-        tpMap.remove(this@tpDelay.uniqueId)
     }
 }
 
@@ -156,31 +138,59 @@ fun Player.inputItem(): ItemStack {
     return itemStack
 }
 
-fun <T> Linked<T>.inits() {
-    this.rows(6)
-    this.slots(inventoryCenterSlots)
-    this.setNextPage(51) { page, hasNextPage ->
+fun <T> Linked<T>.inits(data: ShopData, player: Player) {
+    val config = UIReader.getUIConfig(data)
+    map(*config.getStringList("Layout").toTypedArray())
+    config.getString("Commodity")?.asChar()?.let { slotsBy(it) } ?: slotsBy('@')
+    val nextChar = config.getString("NextItem.slot")?.asChar() ?: 'B'
+    this.setNextPage(getFirstSlot(nextChar)) { page, hasNextPage ->
         if (hasNextPage) {
-            buildItem(XMaterial.SPECTRAL_ARROW) {
-                name = "§f"
+            config.getItemStack("NextItem.has").papi(player) ?: buildItem(XMaterial.SPECTRAL_ARROW) {
+                name = "§f下一页"
             }
         } else {
-            buildItem(XMaterial.ARROW) {
+            config.getItemStack("NextItem.normal").papi(player) ?: buildItem(XMaterial.ARROW) {
                 name = "§7下一页"
             }
         }
     }
-    this.setPreviousPage(47) { page, hasPreviousPage ->
+    val previoustChar = config.getString("PreviousItem.slot")?.asChar() ?: 'C'
+    this.setPreviousPage(getFirstSlot(previoustChar)) { page, hasPreviousPage ->
         if (hasPreviousPage) {
-            buildItem(XMaterial.SPECTRAL_ARROW) {
+            config.getItemStack("PreviousItem.has").papi(player) ?: buildItem(XMaterial.SPECTRAL_ARROW) {
                 name = "§f上一页"
             }
         } else {
-            buildItem(XMaterial.ARROW) {
+            config.getItemStack("PreviousItem.normal").papi(player) ?: buildItem(XMaterial.ARROW) {
                 name = "§7上一页"
             }
         }
     }
+
+    config.getConfigurationSection("OtherItem")?.getKeys(false)?.forEach { key ->
+        config.getItemStack("OtherItem.${key}.item")?.let {
+            set(key.asChar(), it) {
+                isCancelled = true
+                if (clickEvent().isLeftClick) {
+                    if (clickEvent().isShiftClick) {
+                        config.getStringList("OtherItem.${key}.action.left_shift").eval(player)
+                        return@set
+                    }
+                    config.getStringList("OtherItem.${key}.action.left").eval(player)
+                    return@set
+                }
+                if (clickEvent().isRightClick) {
+                    if (clickEvent().isShiftClick) {
+                        config.getStringList("OtherItem.${key}.action.right_shift").eval(player)
+                        return@set
+                    }
+                    config.getStringList("OtherItem.${key}.action.right").eval(player)
+                    return@set
+                }
+            }
+        }
+    }
+
 }
 
 fun List<String>.eval(player: Player) {

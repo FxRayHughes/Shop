@@ -13,16 +13,22 @@ taboolib {
     }
     install("common")
     install("common-5")
+
     install("module-configuration")
     install("module-chat")
     install("module-nms")
     install("module-nms-util")
     install("module-kether")
     install("module-ui")
+    install("module-lang")
+
     install("platform-bukkit")
+
     install("expansion-command-helper")
     install("expansion-javascript")
     install("expansion-ioc")
+    install("expansion-lang-tools")
+
     options("skip-minimize")
     classifier = null
     version = "6.0.10-73"

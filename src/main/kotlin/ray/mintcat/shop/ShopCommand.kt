@@ -4,12 +4,10 @@ import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import ray.mintcat.shop.data.ShopData
-import ray.mintcat.shop.utils.color
-import ray.mintcat.shop.utils.error
-import ray.mintcat.shop.utils.info
 import taboolib.common.platform.command.*
 import taboolib.expansion.createHelper
-import taboolib.platform.BukkitAdapter
+import taboolib.expansion.sendMessageAsLang
+import taboolib.module.lang.Language
 
 @CommandHeader(name = "rshop", aliases = ["sp", "rayshop", "shop"], permission = "shop.use")
 object ShopCommand {
@@ -34,14 +32,41 @@ object ShopCommand {
                     val data = Shop.datas.getOrPut(context["shop"]) {
                         ShopData(context["shop"])
                     }
-                    (data as ShopData).openShop(target)
+                    (data as ShopData).openShop(target,false)
                 }
             }
             execute<Player> { sender, context, argument ->
                 val data = Shop.datas.getOrPut(context["shop"]) {
                     ShopData(context["shop"])
                 }
-                (data as ShopData).openShop(sender)
+                (data as ShopData).openShop(sender,false)
+            }
+        }
+    }
+
+    @CommandBody
+    val edit = subCommand {
+        dynamic("shop") {
+            suggestion<CommandSender>(uncheck = true) { sender, context ->
+                Shop.datas.keys().toList()
+            }
+            player("player") {
+                suggestion<CommandSender> { sender, context ->
+                    Bukkit.getOnlinePlayers().map { it.name }
+                }
+                execute<CommandSender> { sender, context, argument ->
+                    val target = Bukkit.getPlayer(context.player("player").uniqueId)
+                    val data = Shop.datas.getOrPut(context["shop"]) {
+                        ShopData(context["shop"])
+                    }
+                    (data as ShopData).openShop(target,true)
+                }
+            }
+            execute<Player> { sender, context, argument ->
+                val data = Shop.datas.getOrPut(context["shop"]) {
+                    ShopData(context["shop"])
+                }
+                (data as ShopData).openShop(sender,true)
             }
         }
     }
@@ -56,9 +81,9 @@ object ShopCommand {
                 val data = Shop.datas.getOrPut(context["shop"]) {
                     ShopData(context["shop"])
                 } as ShopData
-                sender.info("${context["shop"]}商店包含的商品:")
+                sender.sendMessageAsLang("command-list", context["shop"])
                 data.commodity.forEach {
-                    sender.info("&f- ${it.id} &7(${it.showName})".color())
+                    sender.sendMessageAsLang("command-list-info", it.id ?: it.uuid, it.showName)
                 }
             }
         }
@@ -67,9 +92,9 @@ object ShopCommand {
     @CommandBody
     val listShop = subCommand {
         execute<CommandSender> { sender, context, argument ->
-            sender.info("商店列表:")
+            sender.sendMessageAsLang("command-listshop")
             Shop.datas.keys().toList().forEach {
-                sender.info("&f- ${it}".color())
+                sender.sendMessageAsLang("command-listshop-info", it)
             }
         }
     }
@@ -160,10 +185,10 @@ object ShopCommand {
             }
             execute<CommandSender> { sender, context, argument ->
                 Shop.datas[context.argument(0)] ?: return@execute kotlin.run {
-                    sender.error("商店不存在!")
+                    sender.sendMessageAsLang("command-remove-error")
                 }
                 Shop.datas.remove(context.argument(0))
-                sender.info("商店以删除!")
+                sender.sendMessageAsLang("command-remove-success")
             }
         }
     }
@@ -172,7 +197,9 @@ object ShopCommand {
     val reload = subCommand {
         execute<CommandSender> { sender, context, argument ->
             Shop.config.reload()
-            sender.info("配置文件重载完成")
+            UIReader.load()
+            Language.reload()
+            sender.sendMessageAsLang("command-reload")
         }
     }
 
