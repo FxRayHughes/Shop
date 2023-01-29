@@ -30,12 +30,18 @@ taboolib {
 
 repositories {
     maven { url = uri("https://repo.dmulloy2.net/repository/public/") }
+    maven { url = uri("https://nexus.phoenixdevt.fr/repository/maven-public/") }
     maven { url = uri("https://jitpack.io") }
+    maven { url = uri("https://mvn.lumine.io/repository/maven-public/") }
+    maven { url = uri("https://mvn.lumine.io/repository/maven/") }
     mavenCentral()
 }
 
 dependencies {
     compileOnly("ink.ptms.core:v11200:11200")
+    compileOnly("net.Indyuce:MMOItems:6.7.3")
+    compileOnly("io.lumine:MythicLib-dist:1.4")
+    compileOnly("io.lumine:MythicLib:1.4")
     compileOnly("com.google.code.gson:gson:2.9.0")
     compileOnly("com.github.LoneDev6:API-ItemsAdder:3.2.5")
     compileOnly("com.comphenix.protocol:ProtocolLib:4.7.0")

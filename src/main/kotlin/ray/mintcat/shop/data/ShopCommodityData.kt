@@ -378,7 +378,7 @@ class ShopCommodityData(
                 }
             }
 
-            set('N', buildItem(Material.IRON_FENCE) {
+            set('N', buildItem(XMaterial.IRON_BARS) {
                 name = "&7商品索引ID:&f ${id}"
                 lore.add(" ")
                 lore.add("&7点击编辑")

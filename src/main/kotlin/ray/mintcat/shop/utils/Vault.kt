@@ -9,7 +9,9 @@ import taboolib.platform.compat.replacePlaceholder
 
 object Vault {
 
-    private val economy = Bukkit.getServer().servicesManager.getRegistration(Economy::class.java)?.provider
+    private val economy by lazy {
+        Bukkit.getServer().servicesManager.getRegistration(Economy::class.java)?.provider
+    }
 
     fun takeMoney(player: Player, amount: Double, type: String): Boolean {
         return if (getMoney(player, type) < amount) {
