@@ -198,6 +198,7 @@ object ShopCommand {
         execute<CommandSender> { sender, context, argument ->
             Shop.config.reload()
             UIReader.load()
+            Discount.load()
             Language.reload()
             sender.sendMessageAsLang("command-reload")
         }

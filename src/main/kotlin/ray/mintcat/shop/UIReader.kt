@@ -15,10 +15,15 @@ object UIReader {
 
     val uiConfig = ConcurrentHashMap<String, Configuration>()
 
+    val scriptConfig = ConcurrentHashMap<String, List<String>>()
+
     val files = ArrayList<File>()
 
     @Config("ui/default.yml")
     lateinit var default: ConfigFile
+
+    @Config("script/default.yml")
+    lateinit var defaultscript: ConfigFile
 
     fun getUIConfig(data: ShopData): Configuration {
         return uiConfig.getOrDefault(data.name, default)
@@ -27,10 +32,14 @@ object UIReader {
     @Awake(LifeCycle.ACTIVE)
     fun load() {
         default.reload()
+        defaultscript.reload()
         files.clear()
+        scriptConfig.clear()
         uiConfig.clear()
         loadFile(File(getDataFolder(), "ui/"))
         loadConfig()
+        loadFile(File(getDataFolder(), "script/"))
+        loadScript()
     }
 
     fun loadConfig() {
@@ -38,6 +47,16 @@ object UIReader {
             Configuration.loadFromFile(it, type = Type.YAML).let { cf ->
                 cf.getString("Shop")?.let { name ->
                     uiConfig[name] = cf
+                }
+            }
+        }
+    }
+
+    fun loadScript() {
+        files.forEach {
+            Configuration.loadFromFile(it, type = Type.YAML).let { cf ->
+                cf.getKeys(false).forEach z@{ key ->
+                    scriptConfig[key] = cf.getStringList(key)
                 }
             }
         }

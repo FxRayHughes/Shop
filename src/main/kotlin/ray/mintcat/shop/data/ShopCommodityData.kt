@@ -2,6 +2,7 @@ package ray.mintcat.shop.data
 
 import org.bukkit.Material
 import org.bukkit.entity.Player
+import ray.mintcat.shop.Discount
 import ray.mintcat.shop.data.materials.MaterialFeed
 import ray.mintcat.shop.data.materials.ShopMaterialData
 import ray.mintcat.shop.utils.color
@@ -38,6 +39,18 @@ class ShopCommodityData(
         if (buyItems == null) {
             buyItems = listOf()
         }
+    }
+
+    fun getPriceNew(player: Player, father: ShopData): Double {
+        return Discount.datas.filter {
+            player.hasPermission(it.permission) && (it.shop.isEmpty() || it.shop.contains("all") || it.shop.contains(
+                father.name
+            ))
+        }.minByOrNull {
+            it.data.getOrDefault(moneyType, 1.0)
+        }?.let {
+            it.data.getOrDefault(moneyType, 1.0) * price
+        } ?: price
     }
 
 
@@ -146,10 +159,10 @@ class ShopCommodityData(
                 colored()
             }) {
                 player.closeInventory()
-                player.inputSign(player.asLangTextList("sing-buyedit", price).toTypedArray()) { lens ->
+                player.inputSign(player.asLangTextList("sign-buyedit", price).toTypedArray()) { lens ->
                     val new = lens[0].toDoubleOrNull() ?: 0.0
                     if (new < 0.0 || new == price) {
-                        player.sendMessageAsLang("systemmessage-sing-nonumber")
+                        player.sendMessageAsLang("systemmessage-sign-nonumber")
                         submit(delay = 1) {
                             openEdit(player, father)
                         }
@@ -171,10 +184,10 @@ class ShopCommodityData(
                 colored()
             }) {
                 player.closeInventory()
-                player.inputSign(player.asLangTextList("sing-selledit", buy).toTypedArray()) { lens ->
+                player.inputSign(player.asLangTextList("sign-selledit", buy).toTypedArray()) { lens ->
                     val new = lens[0].toDoubleOrNull() ?: 0.0
                     if (new < 0.0 || new == buy) {
-                        player.sendMessageAsLang("systemmessage-sing-nonumber")
+                        player.sendMessageAsLang("systemmessage-sign-nonumber")
                         submit(delay = 1) {
                             openEdit(player, father)
                         }
@@ -196,7 +209,7 @@ class ShopCommodityData(
                 colored()
             }) {
                 player.closeInventory()
-                player.inputSign(player.asLangTextList("sing-moneytype", moneyType).toTypedArray()) { lens ->
+                player.inputSign(player.asLangTextList("sign-moneytype", moneyType).toTypedArray()) { lens ->
                     val new = lens[0]
                     if (new.isEmpty() || new == moneyType) {
                         player.sendMessageAsLang("systemmessage-edit-giveup")
@@ -346,7 +359,7 @@ class ShopCommodityData(
                 colored()
             }) {
                 player.closeInventory()
-                player.inputSign(player.asLangTextList("sing-showname", showName).toTypedArray()) { lens ->
+                player.inputSign(player.asLangTextList("sign-showname", showName).toTypedArray()) { lens ->
                     val new = lens[0]
                     if (new.isEmpty() || new == showName) {
                         player.sendMessageAsLang("systemmessage-edit-error")
@@ -371,7 +384,7 @@ class ShopCommodityData(
                 colored()
             }) {
                 player.closeInventory()
-                player.inputSign(player.asLangTextList("sing-indexname", showName).toTypedArray()) { lens ->
+                player.inputSign(player.asLangTextList("sign-indexname", showName).toTypedArray()) { lens ->
                     val new = lens[0]
                     if (new.isEmpty() || new == id) {
                         player.sendMessageAsLang("systemmessage-edit-error")
@@ -396,9 +409,9 @@ class ShopCommodityData(
                 colored()
             }) {
                 player.closeInventory()
-                player.inputSign(player.asLangTextList("sing-remove").toTypedArray()) { lens ->
+                player.inputSign(player.asLangTextList("sign-remove").toTypedArray()) { lens ->
                     val new = lens[0]
-                    if (new.isEmpty() || new != "Y") {
+                    if (new.isEmpty() || !new.contains("Y", true)) {
                         player.sendMessageAsLang("systemmessage-edit-remove-error")
                         submit(delay = 1) {
                             openEdit(player, father)
@@ -408,7 +421,7 @@ class ShopCommodityData(
                     father.commodity.remove(this@ShopCommodityData)
                     player.sendMessageAsLang("systemmessage-edit-remove-success")
                     submit(delay = 1) {
-                        father.openShop(player)
+                        father.openShop(player,true)
                     }
                     return@inputSign
                 }
@@ -422,7 +435,7 @@ class ShopCommodityData(
             }) {
                 player.closeInventory()
                 submit(delay = 1) {
-                    father.openShop(player)
+                    father.openShop(player, true)
                 }
             }
         }

@@ -24,7 +24,7 @@ object Vault {
                 Shop.config.getStringList("Type.${type}.take")
                     .replace("<value>", amount.toString())
                     .replace("<player>", player.name).forEach {
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), it)
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), it.replacePlaceholder(player))
                     }
             }
             true
@@ -39,7 +39,7 @@ object Vault {
             Shop.config.getStringList("Type.${type}.add")
                 .replace("<value>", amount.toString())
                 .replace("<player>", player.name).forEach {
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), it)
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), it.replacePlaceholder(player))
                 }
         }
     }

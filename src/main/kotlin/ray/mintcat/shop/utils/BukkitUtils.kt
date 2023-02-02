@@ -8,6 +8,7 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.Vector
 import ray.mintcat.shop.UIReader
+import ray.mintcat.shop.data.ShopCommodityData
 import ray.mintcat.shop.data.ShopData
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common.platform.function.submit
@@ -138,9 +139,13 @@ fun Player.inputItem(): ItemStack {
     return itemStack
 }
 
-fun <T> Linked<T>.inits(data: ShopData, player: Player) {
+fun <T> Linked<T>.inits(data: ShopData, player: Player,edit:Boolean) {
     val config = UIReader.getUIConfig(data)
-    map(*config.getStringList("Layout").toTypedArray())
+    if (edit){
+        map(*config.getStringList("Layout-Edit").toTypedArray())
+    }else{
+        map(*config.getStringList("Layout").toTypedArray())
+    }
     config.getString("Commodity")?.asChar()?.let { slotsBy(it) } ?: slotsBy('@')
     val nextChar = config.getString("NextItem.slot")?.asChar() ?: 'B'
     this.setNextPage(getFirstSlot(nextChar)) { page, hasNextPage ->
@@ -193,20 +198,62 @@ fun <T> Linked<T>.inits(data: ShopData, player: Player) {
 
 }
 
-fun List<String>.eval(player: Player) {
+fun List<String>.eval(player: Player, shopData: ShopData, element: ShopCommodityData, amount: Int) {
+    var script = this
+    val data = this.firstOrNull() ?: return
+    if (data.contains("link:")) {
+        data.split(":").getOrNull(1)?.let {
+            script = UIReader.scriptConfig.getOrDefault(it, listOf())
+        }
+    }
+    script = script
+        .replace("<shop>", shopData.name)
+        .replace("<amount>", amount.toString())
+        .replace("<commodity>", element.id.toString())
+        .replace("<show_name>", element.item.getNameShow(player))
+        .replace("<money_type>", element.moneyType)
+        .replace("<sell_money>", element.buy.toString())
+        .replace("<buy_money>", element.price.toString())
+        .replace("<buy_discount_money>", element.price.toString())
+        .toList()
     try {
-        KetherShell.eval(this, sender = adaptPlayer(player))
+        KetherShell.eval(script, sender = adaptPlayer(player))
     } catch (e: Throwable) {
         e.printKetherErrorMessage()
     }
 }
 
-fun List<String>.check(player: Player): CompletableFuture<Boolean> {
+fun List<String>.eval(player: Player) {
+    var script = this
+    val data = this.firstOrNull() ?: return
+    if (data.contains("link:")) {
+        data.split(":").getOrNull(1)?.let {
+            script = UIReader.scriptConfig.getOrDefault(it, listOf())
+        }
+    }
+    try {
+        KetherShell.eval(script, sender = adaptPlayer(player))
+    } catch (e: Throwable) {
+        e.printKetherErrorMessage()
+    }
+}
+
+fun List<String>.check(player: Player, shopData: ShopData): CompletableFuture<Boolean> {
+    var script = this
+    val data = this.firstOrNull() ?: return CompletableFuture.completedFuture(true)
+    if (data.contains("link:")) {
+        data.split(":").getOrNull(1)?.let {
+            script = UIReader.scriptConfig.getOrDefault(it, listOf())
+        }
+    }
+    script = script
+        .replace("<shop>", shopData.name)
+        .toList()
     return if (this.isEmpty()) {
         CompletableFuture.completedFuture(true)
     } else {
         try {
-            KetherShell.eval(this, sender = adaptPlayer(player)).thenApply {
+            KetherShell.eval(script, sender = adaptPlayer(player)).thenApply {
                 Coerce.toBoolean(it)
             }
         } catch (e: Throwable) {

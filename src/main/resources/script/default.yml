@@ -1,0 +1,14 @@
+#脚本里可以用的 参数
+# <shop> 商店ID
+# <amount> 购买/出售 时的数量
+# <commodity> 购买/出售 时商品的id
+# <show_name> 购买/出售时商品的显示名
+# <money_type> 商品使用的货币
+# <sell_money> <buy_money> <buy_discount_money>
+#注: 脚本名称必须唯一 可以多文件但是名称必须唯一 文件名任意
+
+#例子中使用的是 https://xv5zac7cto.feishu.cn/docx/doxcnP4k0XN7IK7pcugdodQlJLh
+"每日限购_判断":
+  - check aboleth get @Self <shop>_限购 def 0 >= 50
+"每日限购_购买":
+  - aboleth edit @Self <shop>_限购 + <amount> def 0

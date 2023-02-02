@@ -9,9 +9,11 @@ systemmessage-edit-success: '§8[§a 商店 §8]§7 修改成功! {0}'
 systemmessage-edit-giveup: '§8[§4 商店 §8]§7 放弃修改'
 systemmessage-edit-remove-error: '§8[§4 商店 §8]§7 取消删除'
 systemmessage-edit-remove-success: '§8[§a 商店 §8]§7 删除成功'
-systemmessage-sing-nonumber: '§8[§4 商店 §8]§7 请输入正确的数字!'
-systemmessage-sing-number: '§8[§4 商店 §8]§7 请输入正确的数量!'
+systemmessage-sign-nonumber: '§8[§4 商店 §8]§7 请输入正确的数字!'
+systemmessage-sign-number: '§8[§4 商店 §8]§7 请输入正确的数量!'
 systemmessage-item-nohave: '§8[§4 商店 §8]§7 你所拥有的物品不足!'
+systemmessage-buy-codition: '§8[§4 商店 §8]§7 条件不满足，无法购买!'
+systemmessage-sell-codition: '§8[§4 商店 §8]§7 条件不满足，无法出售!'
 
 manageui-create-name: '&6创建新商品 +'
 manageui-create-lore:
@@ -40,8 +42,8 @@ manageui-edit-action-sell-book: "&3编辑书本: 修改出售后动作"
 manageui-edit-action: "&7编辑商品固有动作"
 manageui-edit-action-info: "&7动作为Kether脚本购买/出售后执行一次"
 manageui-edit-action-book: "&3编辑书本: 修改固有动作"
-manageui-edit-condition: "&7编辑商品固有动作"
-manageui-edit-condition-info: "&7动作为Kether脚本购买/出售后执行一次"
+manageui-edit-condition: "&7编辑商品购买条件"
+manageui-edit-condition-info: "&7不满足条件则不显示商品"
 manageui-edit-condition-book: "&3编辑书本: 修改固有动作"
 manageui-edit-giveitem: "&7是否给予展示物品: {0}"
 manageui-edit-showname: "&7商品显示名:&f {0}"
@@ -63,6 +65,8 @@ manageui-copy: '§8[§a 商店 §8]§7 已复制到粘贴板!'
 
 shopui-edit: "编辑模式: "
 shopui-noitem: '&4物品不存在&e {0}:{1}'
+shopui-buy-discount:
+  - '&c&m原价: {0} &f({1})/个'
 shopui-buy:
   - '&7出售价: &f{0} ({1})/个'
   - '&8左键购买'
@@ -77,48 +81,49 @@ shopui-edit-normal:
   - '&cUUID: {0}'
   - '&cID: {1}'
   - ' '
-  - '&4&lShift+右键打开编辑模式'
-  - '&e&lShift+左键复制到粘贴板'
+  - '&4&lShift+右键 打开编辑模式'
+  - '&e&lShift+左键 复制到粘贴板'
+  - '&6&lQ键 删除商品'
 shopui-edit-condition-title:
   - '&c条件:'
 shopui-edit-condition-info: '&f-> {0}'
 
-sing-buy:
+sign-buy:
   - '&r'
   - '单价: {0}/个'
   - '第一行输入购买数量'
   - '点击确认进行购买'
-sing-buyedit:
+sign-buyedit:
   - '{0}'
   - '出售单价'
   - '第一行输入新的价格'
   - '点击确认进行保存'
-sing-selledit:
+sign-selledit:
   - '{0}'
   - '回收单价'
   - '第一行输入新的价格'
   - '点击确认进行保存'
-sing-sell:
+sign-sell:
   - '&r'
   - '单价: {0}/个'
   - '第一行输入出售数量'
   - '点击确认进行出售'
-sing-moneytype:
+sign-moneytype:
   - '{0}'
   - '货币类型'
   - '第一行输入新的类型'
   - '点击确认进行保存'
-sing-showname:
+sign-showname:
   - '{0}'
   - '显示名称'
   - '第一行输入显示名'
   - '点击确认进行保存'
-sing-indexname:
+sign-indexname:
   - '{0}'
   - '索引名称'
   - '第一行输入索引名'
   - '点击确认进行保存'
-sing-remove:
+sign-remove:
   - ' '
   - '删除复选框'
   - '第一行输入 Y'

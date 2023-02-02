@@ -108,10 +108,14 @@ fun ItemStack?.papi(player: Player): ItemStack? {
         return null
     }
     modifyMeta<ItemMeta> {
-        displayName = displayName.replacePlaceholder(player)
+        if (this.hasDisplayName()){
+            displayName = displayName.replacePlaceholder(player)
+        }
     }
     modifyLore {
-        replacePlaceholder(player)
+        val clone = map { it.replacePlaceholder(player) }.toMutableList()
+        this.clear()
+        this.addAll(clone)
     }
     return this
 }
