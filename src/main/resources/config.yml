@@ -1,8 +1,15 @@
 Lang: "zh_CN"
+BlackLore:
+  - "已绑定"
+  - "不可出售"
 Type:
   Vault:
     name: "货币"
   "世界币":
+    #Type可选: INT DOUBLE
+    #INT整数  DOUBLE小数
+    #Value会自动取整
+    type: "INT"
     name: "&e世界币"
     take:
       - "abo editmo 世界币 <value> - <player>"

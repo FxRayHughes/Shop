@@ -12,12 +12,12 @@ import taboolib.module.lang.Language
 @CommandHeader(name = "rshop", aliases = ["sp", "rayshop", "shop"], permission = "shop.use")
 object ShopCommand {
 
-    @CommandBody
+    @CommandBody(permission = "shop.main")
     val main = mainCommand {
         createHelper()
     }
 
-    @CommandBody
+    @CommandBody(permission = "shop.open")
     val open = subCommand {
         dynamic("shop") {
             suggestion<CommandSender>(uncheck = true) { sender, context ->
@@ -44,7 +44,7 @@ object ShopCommand {
         }
     }
 
-    @CommandBody
+    @CommandBody(permission = "shop.edit")
     val edit = subCommand {
         dynamic("shop") {
             suggestion<CommandSender>(uncheck = true) { sender, context ->
@@ -71,7 +71,7 @@ object ShopCommand {
         }
     }
 
-    @CommandBody
+    @CommandBody(permission = "shop.list")
     val list = subCommand {
         dynamic("shop") {
             suggestion<CommandSender>(uncheck = true) { sender, context ->
@@ -89,7 +89,7 @@ object ShopCommand {
         }
     }
 
-    @CommandBody
+    @CommandBody(permission = "shop.listshop")
     val listShop = subCommand {
         execute<CommandSender> { sender, context, argument ->
             sender.sendMessageAsLang("command-listshop")
@@ -99,7 +99,7 @@ object ShopCommand {
         }
     }
 
-    @CommandBody
+    @CommandBody(permission = "shop.buy")
     val buy = subCommand {
         dynamic("shop") {
             suggestion<CommandSender>(uncheck = true) { sender, context ->
@@ -138,7 +138,7 @@ object ShopCommand {
         }
     }
 
-    @CommandBody
+    @CommandBody(permission = "shop.sell")
     val sell = subCommand {
         dynamic("shop") {
             suggestion<CommandSender>(uncheck = true) { sender, context ->
@@ -177,7 +177,7 @@ object ShopCommand {
         }
     }
 
-    @CommandBody
+    @CommandBody(permission = "shop.remove")
     val remove = subCommand {
         dynamic(optional = false, comment = "ShopName") {
             suggestion<CommandSender> { sender, context ->
@@ -193,7 +193,7 @@ object ShopCommand {
         }
     }
 
-    @CommandBody
+    @CommandBody(permission = "shop.reload")
     val reload = subCommand {
         execute<CommandSender> { sender, context, argument ->
             Shop.config.reload()

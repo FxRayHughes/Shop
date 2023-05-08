@@ -9,6 +9,7 @@ import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.module.nms.getName
 import taboolib.platform.util.countItem
+import taboolib.platform.util.hasLore
 import taboolib.platform.util.takeItem
 
 object MaterialItemsAdder : Material {
@@ -44,7 +45,7 @@ object MaterialItemsAdder : Material {
 
     override fun amount(inventory: Inventory, id: String): Int {
         return inventory.countItem {
-            isItem(it, id)
+            isItem(it, id) && MaterialFeed.canUse(it)
         }
     }
 
@@ -68,7 +69,7 @@ object MaterialItemsAdder : Material {
 
     override fun takeItem(inventory: Inventory, id: String, amount: Int): Boolean {
         return inventory.takeItem(amount) {
-            isItem(it, id)
+            isItem(it, id) && MaterialFeed.canUse(it)
         }
     }
 }

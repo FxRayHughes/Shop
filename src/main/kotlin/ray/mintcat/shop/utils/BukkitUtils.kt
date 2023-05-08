@@ -206,18 +206,17 @@ fun List<String>.eval(player: Player, shopData: ShopData, element: ShopCommodity
             script = UIReader.scriptConfig.getOrDefault(it, listOf())
         }
     }
-    script = script
-        .replace("<shop>", shopData.name)
-        .replace("<amount>", amount.toString())
-        .replace("<commodity>", element.id.toString())
-        .replace("<show_name>", element.item.getNameShow(player))
-        .replace("<money_type>", element.moneyType)
-        .replace("<sell_money>", element.buy.toString())
-        .replace("<buy_money>", element.price.toString())
-        .replace("<buy_discount_money>", element.price.toString())
-        .toList()
     try {
-        KetherShell.eval(script, sender = adaptPlayer(player))
+        KetherShell.eval(script
+            .replace("<shop>", shopData.name)
+            .replace("<amount>", amount.toString())
+            .replace("<commodity>", element.id.toString())
+            .replace("<show_name>", element.item.getNameShow(player))
+            .replace("<money_type>", element.moneyType)
+            .replace("<sell_money>", element.buy.toString())
+            .replace("<buy_money>", element.price.toString())
+            .replace("<buy_discount_money>", element.price.toString())
+            .toList(), sender = adaptPlayer(player))
     } catch (e: Throwable) {
         e.printKetherErrorMessage()
     }

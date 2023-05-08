@@ -21,11 +21,22 @@ object Vault {
                 val eco = economy ?: return false
                 eco.withdrawPlayer(player, amount)
             } else {
-                Shop.config.getStringList("Type.${type}.take")
-                    .replace("<value>", amount.toString())
-                    .replace("<player>", player.name).forEach {
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), it.replacePlaceholder(player))
+                when (Shop.config.getString("Type.${type}.type")) {
+                    "Int", "int", "INT" -> {
+                        Shop.config.getStringList("Type.${type}.take")
+                            .replace("<value>", amount.toInt().toString())
+                            .replace("<player>", player.name).forEach {
+                                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), it.replacePlaceholder(player))
+                            }
                     }
+                    else->{
+                        Shop.config.getStringList("Type.${type}.take")
+                            .replace("<value>", amount.toString())
+                            .replace("<player>", player.name).forEach {
+                                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), it.replacePlaceholder(player))
+                            }
+                    }
+                }
             }
             true
         }
@@ -36,11 +47,22 @@ object Vault {
             val eco = economy ?: return
             eco.depositPlayer(player, amount)
         } else {
-            Shop.config.getStringList("Type.${type}.add")
-                .replace("<value>", amount.toString())
-                .replace("<player>", player.name).forEach {
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), it.replacePlaceholder(player))
+            when (Shop.config.getString("Type.${type}.type")) {
+                "Int", "int", "INT" -> {
+                    Shop.config.getStringList("Type.${type}.add")
+                        .replace("<value>", amount.toInt().toString())
+                        .replace("<player>", player.name).forEach {
+                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), it.replacePlaceholder(player))
+                        }
                 }
+                else->{
+                    Shop.config.getStringList("Type.${type}.add")
+                        .replace("<value>", amount.toString())
+                        .replace("<player>", player.name).forEach {
+                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), it.replacePlaceholder(player))
+                        }
+                }
+            }
         }
     }
 

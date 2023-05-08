@@ -107,8 +107,11 @@ fun ItemStack?.papi(player: Player): ItemStack? {
     if (this == null) {
         return null
     }
+    if (this.isAir()) {
+        return this
+    }
     modifyMeta<ItemMeta> {
-        if (this.hasDisplayName()){
+        if (this.hasDisplayName()) {
             displayName = displayName.replacePlaceholder(player)
         }
     }

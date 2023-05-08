@@ -1,15 +1,12 @@
 package ray.mintcat.shop.data.materials
 
-import dev.lone.itemsadder.api.CustomStack
 import github.saukiya.sxitem.SXItem
-import github.saukiya.sxitem.data.item.ItemManager
-import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import taboolib.common.LifeCycle
+import taboolib.common.io.getClass
 import taboolib.common.platform.Awake
-import taboolib.common.platform.function.pluginId
 import taboolib.module.nms.getName
 import taboolib.platform.util.countItem
 import taboolib.platform.util.takeItem
@@ -19,10 +16,9 @@ object MaterialSXItem : Material {
     override val from: String
         get() = "SXItem"
 
-
     @Awake(LifeCycle.ACTIVE)
     fun onload() {
-        if (Bukkit.getPluginManager().getPlugin("SX-Item") != null) {
+        if (runCatching { getClass("github.saukiya.sxitem.SXItem") }.getOrNull() != null) {
             try {
                 register()
             } catch (_: Exception) {
@@ -43,7 +39,7 @@ object MaterialSXItem : Material {
 
     override fun amount(inventory: Inventory, id: String): Int {
         return inventory.countItem {
-            isItem(it, id)
+            isItem(it, id) && MaterialFeed.canUse(it)
         }
     }
 
@@ -67,7 +63,7 @@ object MaterialSXItem : Material {
 
     override fun takeItem(inventory: Inventory, id: String, amount: Int): Boolean {
         return inventory.takeItem(amount) {
-            isItem(it, id)
+            isItem(it, id) && MaterialFeed.canUse(it)
         }
     }
 }

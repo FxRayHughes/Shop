@@ -46,7 +46,7 @@ object MaterialMinecraft : Material {
 
     override fun amount(inventory: Inventory, id: String): Int {
         return inventory.countItem {
-            isItem(it, id)
+            isItem(it, id) && MaterialFeed.canUse(it)
         }
     }
 
@@ -95,7 +95,7 @@ object MaterialMinecraft : Material {
 
     override fun takeItem(inventory: Inventory, id: String, amount: Int): Boolean {
         return inventory.takeItem(amount) {
-            isItem(it, id)
+            isItem(it, id) && MaterialFeed.canUse(it)
         }
     }
 

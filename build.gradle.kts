@@ -31,7 +31,7 @@ taboolib {
 
     options("skip-minimize")
     classifier = null
-    version = "6.0.10-73"
+    version = "6.0.10-118"
 }
 
 repositories {

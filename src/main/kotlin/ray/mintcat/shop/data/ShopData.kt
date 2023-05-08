@@ -43,8 +43,7 @@ class ShopData(
         }
         player.openMenu<Linked<ShopCommodityData>>(uiName) {
             val config = UIReader.getUIConfig(this@ShopData)
-            inits(this@ShopData, player,edit)
-            virtualize()
+            inits(this@ShopData, player, edit)
             elements {
                 if (player.isOp) {
                     commodity
@@ -132,7 +131,7 @@ class ShopData(
 
             if (player.isOp && edit) {
                 val rn = config.getString("ReName")?.asChar()
-                if (rn != null){
+                if (rn != null) {
                     set(getFirstSlot(rn), buildItem(XMaterial.NAME_TAG) {
                         name = player.asLangText("manageui-rename-name")
                         if (Shop.copy[player.uniqueId] != null) {
@@ -161,7 +160,7 @@ class ShopData(
                     }
                 }
                 val sl = config.getString("CreateItem")?.asChar()
-                if (sl != null){
+                if (sl != null) {
                     set(getFirstSlot(sl), buildItem(XMaterial.MAP) {
                         name = player.asLangText("manageui-create-name")
                         if (Shop.copy[player.uniqueId] != null) {
@@ -315,7 +314,7 @@ class ShopData(
         (1..amount).forEach {
             element.actionSell.replace("=money=", money.toString()).toList().eval(player, this, element, amount)
         }
-        element.action.replace("=money=", money.toString()).toList().eval(player)
+        element.action.replace("=money=", money.toString()).toList().eval(player, this, element, amount)
         player.sendMessageAsLang(
             "systemmessage-sell-success",
             element.showName,
@@ -367,7 +366,7 @@ class ShopData(
             (1..amount).forEach {
                 element.actionBuy.replace("=money=", money.toString()).toList().eval(player, this, element, amount)
             }
-            element.action.replace("=money=", money.toString()).toList().eval(player)
+            element.action.replace("=money=", money.toString()).toList().eval(player, this, element, amount)
             player.sendMessageAsLang(
                 "systemmessage-buy-success",
                 element.showName, amount,
@@ -522,7 +521,7 @@ class ShopData(
                 }
             }
 
-            if (element.buy > 0.0 || element.buyItems?.isNotEmpty() == true || !config.getBoolean("InteractiveMode.Sell.hide")) {
+            if ((element.buy > 0.0 || element.buyItems?.isNotEmpty() == true) || !config.getBoolean("InteractiveMode.Sell.hide")) {
                 getSlots(config.getString("InteractiveMode.Sell.slot")!!.asChar()).forEach {
                     set(it, config.getItemStack("InteractiveMode.Sell.item")?.papi(player) ?: return@forEach) {
                         player.closeInventory()
