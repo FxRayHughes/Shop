@@ -126,6 +126,12 @@ class ShopData(
                     set("RAYSHOPSELL", element.price)
                     set("RAYSHOPTYPE", element.moneyType)
                     set("RAYSHOPTYPEINFO", Vault.getName(element.moneyType))
+                    set("RAYSHOPITEM",
+                        element.buyItems?.joinToString("\n") { "${it.form}::${it.id}::${it.amount}" }
+                    )
+                    set("RAYSHOPITEMNAME",
+                        element.buyItems?.joinToString("\n") { "${it.getNameShow(player)} X${it.amount}" }
+                    )
                 }
             }
 
@@ -507,7 +513,7 @@ class ShopData(
             }
 
 
-            if (element.price > 0.0 || !config.getBoolean("InteractiveMode.Buy.hide")) {
+            if ((element.price > 0.0 || element.buyItems?.isNotEmpty() == true) || !config.getBoolean("InteractiveMode.Buy.hide")) {
                 getSlots(config.getString("InteractiveMode.Buy.slot")!!.asChar()).forEach {
                     set(it, config.getItemStack("InteractiveMode.Buy.item")?.papi(player) ?: return@forEach) {
                         player.closeInventory()
@@ -521,7 +527,7 @@ class ShopData(
                 }
             }
 
-            if ((element.buy > 0.0 || element.buyItems?.isNotEmpty() == true) || !config.getBoolean("InteractiveMode.Sell.hide")) {
+            if ((element.buy > 0.0) || !config.getBoolean("InteractiveMode.Sell.hide")) {
                 getSlots(config.getString("InteractiveMode.Sell.slot")!!.asChar()).forEach {
                     set(it, config.getItemStack("InteractiveMode.Sell.item")?.papi(player) ?: return@forEach) {
                         player.closeInventory()

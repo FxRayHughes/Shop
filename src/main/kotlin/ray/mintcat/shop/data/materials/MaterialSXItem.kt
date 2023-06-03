@@ -9,6 +9,7 @@ import taboolib.common.io.getClass
 import taboolib.common.platform.Awake
 import taboolib.module.nms.getName
 import taboolib.platform.util.countItem
+import taboolib.platform.util.giveItem
 import taboolib.platform.util.takeItem
 
 object MaterialSXItem : Material {
@@ -27,7 +28,7 @@ object MaterialSXItem : Material {
     }
 
     override fun getId(itemStack: ItemStack): String? {
-        return SXItem.getItemManager().getGenerator(itemStack)?.name
+        return SXItem.getItemManager().getGenerator(itemStack)?.key
     }
 
     override val itemList: List<ItemStack>
@@ -44,7 +45,8 @@ object MaterialSXItem : Material {
     }
 
     override fun getItem(id: String, amount: Int, user: Player?): ItemStack? {
-        return SXItem.getItemManager().getItem(id, user!!)?.apply {
+        val gem = SXItem.getItemManager().getGenerator(id) ?: return null
+        return SXItem.getItemManager().getItem(gem, user)?.apply {
             this.amount = amount
         }
     }
